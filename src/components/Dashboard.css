@@ -1,0 +1,165 @@
+/* Reuse general variables from Login.css if possible, or redefine */
+:root {
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --accent-color: #64ffda;
+}
+
+.dashboard-container {
+    padding: 20px;
+    padding-bottom: 100px;
+    /* Space for bottom nav */
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-header {
+    margin-top: 20px;
+    margin-bottom: 40px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Mobile Sticky Header */
+@media (max-width: 768px) {
+    .dashboard-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding: 20px 0 10px;
+        background: rgba(2, 6, 23, 0.8);
+        /* Dark semi-transparent bg */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        width: 100%;
+    }
+
+    .dashboard-container {
+        padding-top: 0;
+        /* Header handles its own spacing now */
+    }
+}
+
+.greeting-text {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.date-text {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 5px;
+    color: var(--text-primary);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 5px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.select-action {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.sports-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.sport-card {
+    position: relative;
+    height: 120px;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.sport-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-color);
+}
+
+/* Gradients to mimic images */
+.bg-tennis {
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6)), linear-gradient(45deg, #2c3e50, #27ae60);
+}
+
+.bg-badminton {
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6)), linear-gradient(45deg, #2980b9, #2c3e50);
+}
+
+.bg-pickleball {
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6)), linear-gradient(45deg, #8e44ad, #3498db);
+}
+
+.bg-basketball {
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.6)), linear-gradient(45deg, #d35400, #f39c12);
+}
+
+.sport-name {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    /* Light strip at bottom like images */
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Selection Box overlay effect for selected item (optional visual cue) */
+.selection-box {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}

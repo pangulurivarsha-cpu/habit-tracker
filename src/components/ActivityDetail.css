@@ -1,0 +1,403 @@
+/* Professional Activity Detail Styles */
+
+.activity-detail {
+    padding: var(--space-xl);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center normally */
+    width: 100%;
+}
+
+/* On Desktop: Full width container, no "frame" border */
+.mobile-frame {
+    width: 100%;
+    max-width: 1400px;
+    /* Wide but readable */
+    margin: 0 auto;
+    background: transparent;
+    /* Remove container bg on desktop for cleaner look */
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+}
+
+/* Header Section */
+.activity-header {
+    background: transparent;
+    border-bottom: 2px solid var(--border-subtle);
+    padding: 0 0 var(--space-lg) 0;
+    margin-bottom: var(--space-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.back-btn {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-bottom: var(--space-md);
+}
+
+.back-btn:hover {
+    border-color: var(--text-main);
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.activity-info h1 {
+    font-size: 2.5rem;
+    /* Larger title */
+    margin: 0;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.timings-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: var(--space-sm);
+}
+
+.edit-timings-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: var(--primary-400);
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    transition: all 0.2s;
+}
+
+.edit-timings-btn:hover {
+    background: var(--primary-500);
+    color: white;
+}
+
+/* Month and Year Selector - Floating Bar */
+.month-year-selector {
+    background: var(--bg-card);
+    /* Dark card bg */
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    gap: var(--space-xl);
+    align-items: center;
+    margin-bottom: var(--space-xl);
+    width: fit-content;
+}
+
+.selector-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.selector-group label {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.selector-group select {
+    appearance: none;
+    /* Remove default arrow */
+    background-color: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font-display);
+    cursor: pointer;
+    padding-right: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+
+.selector-group select:focus {
+    outline: none;
+}
+
+.selector-group select option {
+    background: var(--bg-card);
+    color: var(--text-main);
+}
+
+/* Table / Grid Layout */
+.activity-content-compact {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    width: 100%;
+}
+
+/* Grid Header */
+.compact-grid-header {
+    display: grid;
+    grid-template-columns: 200px 1fr 80px;
+    /* Wider name column */
+    gap: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: var(--space-md);
+}
+
+.header-names,
+.header-calendar,
+.header-total {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.calendar-title {
+    display: none;
+}
+
+/* Hide redundant title */
+
+.total-header-flex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+/* Participant Row */
+.participant-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 80px;
+    gap: var(--space-md);
+    align-items: center;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.2s;
+}
+
+.participant-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.participant-name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: var(--space-md);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+/* Calendar Scroll Area */
+.calendar-scroll-wrapper {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+}
+
+/* Calendar Inner Grid */
+.participant-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 45px);
+    /* 7 columns = Week by Week view */
+    gap: 4px;
+}
+
+.days-header-inline {
+    display: grid;
+    grid-template-columns: repeat(7, 45px);
+    gap: 4px;
+    margin-bottom: var(--space-sm);
+}
+
+.days-header-inline span {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    width: 45px;
+    font-weight: 600;
+}
+
+/* Checkbox Cells */
+.checkbox-cell {
+    width: 45px;
+    height: 48px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkbox-cell:hover {
+    border-color: var(--primary-500);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.checkbox-cell.empty {
+    border: none;
+    background: transparent;
+    cursor: default;
+}
+
+.date-num {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.checkbox-cell input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--slate-600);
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-cell input[type="checkbox"]:checked {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+}
+
+.checkbox-cell input[type="checkbox"]:checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Total Badge */
+.participant-total {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--accent-400);
+    margin: 0 auto;
+}
+
+/* Add Button */
+.add-name-row {
+    margin-top: var(--space-lg);
+    display: flex;
+    justify-content: flex-start;
+    /* Left align */
+}
+
+.add-name-btn-compact {
+    background: transparent;
+    border: 1px dashed var(--border-subtle);
+    color: var(--text-muted);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.add-name-btn-compact:hover {
+    border-color: var(--primary-500);
+    color: var(--primary-400);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+
+/* Toggle Switch */
+.toggle-switch {
+    display: flex;
+    background: var(--bg-main);
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+}
+
+.toggle-switch button {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toggle-switch button.active {
+    background: var(--slate-700);
+    color: white;
+}
+
+/* Mobile Responsive Override */
+@media (max-width: 768px) {
+    .mobile-frame {
+        max-width: 100%;
+        background: var(--bg-card);
+        border: none;
+        box-shadow: none;
+    }
+
+    .participant-row,
+    .compact-grid-header {
+        grid-template-columns: 120px 1fr 50px;
+        /* Tighter columns on mobile */
+    }
+
+    .participant-calendar {
+        grid-template-columns: repeat(7, 45px);
+        /* Week View width */
+        gap: 4px;
+    }
+
+    .days-header-inline {
+        grid-template-columns: repeat(7, 45px);
+    }
+
+    .checkbox-cell {
+        width: 45px;
+        height: 50px;
+    }
+
+    .activity-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
