@@ -136,8 +136,9 @@ export const ActivityDetail = () => {
         const updatedMonths = { ...participantsByMonth };
 
         // Add to current month
+        const baseId = Date.now(); // Generate ONE ID for all months
         const newParticipant = {
-            id: Date.now(),
+            id: baseId,
             name: newName.trim(),
             classes: newClasses,
             paidStatus: newPaidStatus,
@@ -161,7 +162,7 @@ export const ActivityDetail = () => {
             const alreadyExists = futureParticipants.some(p => p.name.toLowerCase() === newName.trim().toLowerCase());
             if (!alreadyExists) {
                 const futureParticipant = {
-                    id: Date.now() + i * 1000,
+                    id: baseId, // Reuse the same ID so we can track them globally
                     name: newName.trim(),
                     classes: newClasses,
                     paidStatus: newPaidStatus, // Carry over status? Or reset? Let's carry over for now
@@ -254,26 +255,55 @@ export const ActivityDetail = () => {
         return dates;
     };
 
-    const calculateTotal = (participant) => {
-        const dates = viewMode === 'week' ? getWeekDates() : getCalendarDates().filter(d => d !== null);
-        let attendedCount = 0;
+    // Calculate total attendance ACROSS ALL MONTHS for this participant
+    // Uses ID if available, falls back to Name for older legacy data
+    const calculateGlobalAttendance = (participant) => {
+        let globalAttendedCount = 0;
 
-        // Count attendance for the current view (or mostly current month context)
-        // If we want total remaining classes, we should probably count ALL attendance for this participant?
-        // But the current storage is month-based. So let's count attendance in this month/view.
-        dates.forEach(date => {
-            const dateStr = date.toISOString().split('T')[0];
-            if (participant.attendance[dateStr]) attendedCount++;
+        Object.values(participantsByMonth).forEach(monthParticipants => {
+            const p = monthParticipants.find(mp =>
+                (participant.id && mp.id === participant.id) ||
+                (mp.name.toLowerCase() === participant.name.toLowerCase())
+            );
+
+            if (p && p.attendance) {
+                globalAttendedCount += Object.values(p.attendance).filter(Boolean).length;
+            }
         });
 
+        return globalAttendedCount;
+    };
+
+    const calculateTotal = (participant) => {
+        // We now want a global remaining count regardless of view mode.
+        const globalAttendedCount = calculateGlobalAttendance(participant);
         const totalClasses = parseInt(participant.classes) || 0;
+
         if (totalClasses > 0) {
-            return totalClasses - attendedCount;
+            return totalClasses - globalAttendedCount;
         }
-        return attendedCount;
+
+        // If they don't have a set number of classes, just show how many they've attended total
+        return globalAttendedCount;
     };
 
     const displayDates = viewMode === 'week' ? getWeekDates() : getCalendarDates();
+
+    // Determine active vs completed status and sort
+    const sortedParticipants = [...currentParticipants].sort((a, b) => {
+        const totalClassesA = parseInt(a.classes) || 0;
+        const totalClassesB = parseInt(b.classes) || 0;
+
+        const remainingA = totalClassesA > 0 ? calculateTotal(a) : 1; // 1 means infinite/no-limit (active)
+        const remainingB = totalClassesB > 0 ? calculateTotal(b) : 1;
+
+        const isCompletedA = totalClassesA > 0 && remainingA <= 0;
+        const isCompletedB = totalClassesB > 0 && remainingB <= 0;
+
+        if (isCompletedA && !isCompletedB) return 1;  // A goes down
+        if (!isCompletedA && isCompletedB) return -1; // B goes down
+        return 0; // Keep current order otherwise
+    });
 
     return (
         <div className="activity-detail">
@@ -335,10 +365,14 @@ export const ActivityDetail = () => {
                         </div>
                     </div>
 
-                    {currentParticipants.map((participant, pIndex) => {
+                    {sortedParticipants.map((participant, pIndex) => {
                         const dates = viewMode === 'week' ? getWeekDates() : displayDates;
+                        const totalClasses = parseInt(participant.classes) || 0;
+                        const remaining = calculateTotal(participant);
+                        const isCompleted = totalClasses > 0 && remaining <= 0;
+
                         return (
-                            <div key={participant.id} className="participant-row">
+                            <div key={participant.id} className={`participant-row ${isCompleted ? 'completed-participant' : ''}`}>
                                 <div className="participant-name">
                                     <div className="name-container">
                                         <span className="name-text">{participant.name}</span>

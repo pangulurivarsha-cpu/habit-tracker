@@ -221,6 +221,18 @@
     background: rgba(255, 255, 255, 0.02);
 }
 
+.participant-row.completed-participant {
+    opacity: 0.4;
+    filter: grayscale(80%);
+    pointer-events: none;
+    /* Disables interaction like clicking checkboxes */
+}
+
+/* Allow remove button to still be clickable even if completed */
+.participant-row.completed-participant .remove-btn-inline {
+    pointer-events: auto;
+}
+
 .participant-name {
     display: flex;
     align-items: center;
