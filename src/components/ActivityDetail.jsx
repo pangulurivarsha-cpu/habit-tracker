@@ -430,9 +430,8 @@ export const ActivityDetail = () => {
                                                 // Ensure consistency between week and month views by relying strictly on local timezone values
                                                 const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-                                                // Support legacy UTC keys temporarily by checking both
-                                                const utcDateStr = date.toISOString().split('T')[0];
-                                                const isChecked = participant.attendance[localDateStr] || participant.attendance[utcDateStr] || false;
+                                                // Remove legacy UTC keys to prevent timezone offset overlap
+                                                const isChecked = participant.attendance[localDateStr] || false;
 
                                                 const isPaymentDate = participant.paymentDate === localDateStr;
 
