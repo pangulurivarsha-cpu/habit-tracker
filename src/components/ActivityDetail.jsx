@@ -251,7 +251,7 @@ export const ActivityDetail = () => {
 
         // Start from Sunday of current week
         for (let i = 0; i < 7; i++) {
-            const date = new Date(today);
+            const date = new Date(today.getTime()); // Clone the base date properly to prevent reference cascading
             date.setDate(today.getDate() - dayOfWeek + i);
             dates.push(date);
         }
