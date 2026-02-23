@@ -233,7 +233,13 @@ function App() {
         } else {
             // Pollinations.ai is down/upgrading. a LoremFlickr for reliable keyword-based images.
             // Format: https://loremflickr.com/{width}/{height}/{keywords joined by comma}/all
-            const searchTerm = activityName.toLowerCase().replace(/\s+/g, ',');
+            // Clean the name: remove emojis, special chars, extra spaces to get pure keywords
+            const cleanName = activityName.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            const searchTerm = cleanName.replace(/\s+/g, ',');
+            // Add 'sport' only if it's likely a sport, or just use the name as primary keyword
+            // We append 'sport' to filter out ambiguous terms (e.g. 'Reading' -> 'Reading,sport' might be weird, but for this app it's fine)
+            // Actually, for broad activities, just the name might be better if specific.
+            // Let's stick to name + sport for now, but cleaned.
             imgUrl = `https://loremflickr.com/800/600/${searchTerm},sport/all`;
         }
 
@@ -368,7 +374,7 @@ function App() {
     if (loading) return <div className="page-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'white' }}>Loading...</div>;
 
     return (
-        <UserContext.Provider value={{ user, login, logout }}>
+        <UserContext.Provider value={{ user, setUser, login, logout }}>
             <HabitContext.Provider value={{ habits, addHabit, toggleCheck, activities, addActivity, deleteActivity, updateActivityImage }}>
                 <Router>
                     <AppRoutes />

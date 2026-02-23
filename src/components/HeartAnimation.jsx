@@ -1,108 +1,149 @@
 import React, { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Star, Zap, Trophy, Sun, Flame, Smile, Target, Mountain, Award } from 'lucide-react';
 
 const motivationalMessages = [
     {
         title: "Keep Going!",
         message: "Every small step you take is building the person you want to become.",
-        subtitle: "Stay consistent, stay motivated, and remember: you're doing amazing! ❤️"
+        subtitle: "Stay consistent, stay motivated, and remember: you're doing amazing! ❤️",
+        icon: Heart,
+        color: "#ff6b9d"
     },
     {
         title: "You've Got This!",
         message: "Success is the sum of small efforts repeated day in and day out.",
-        subtitle: "Don't give up now. Your future self will thank you! 💪"
+        subtitle: "Don't give up now. Your future self will thank you! 💪",
+        icon: Target,
+        color: "#64ffda"
     },
     {
         title: "Believe in Yourself!",
         message: "The only person you are destined to become is the person you decide to be.",
-        subtitle: "Your determination today creates your reality tomorrow! ✨"
+        subtitle: "Your determination today creates your reality tomorrow! ✨",
+        icon: Star,
+        color: "#feca57"
     },
     {
         title: "Progress Over Perfection!",
         message: "You don't have to be great to start, but you have to start to be great.",
-        subtitle: "Every expert was once a beginner. Keep pushing forward! 🚀"
+        subtitle: "Every expert was once a beginner. Keep pushing forward! 🚀",
+        icon: Mountain,
+        color: "#54a0ff"
     },
     {
         title: "Stay Strong!",
         message: "Difficult roads often lead to beautiful destinations.",
-        subtitle: "The struggle you're in today is developing the strength you need for tomorrow! 💎"
+        subtitle: "The struggle you're in today is developing the strength you need for tomorrow! 💎",
+        icon: Trophy,
+        color: "#ff9ff3"
     },
     {
         title: "You're Unstoppable!",
         message: "Success doesn't come from what you do occasionally. It comes from what you do consistently.",
-        subtitle: "Your habits shape your future. Keep building! 🏆"
+        subtitle: "Your habits shape your future. Keep building! 🏆",
+        icon: Flame,
+        color: "#ff6b6b"
     },
     {
         title: "Dream Big!",
         message: "The future belongs to those who believe in the beauty of their dreams.",
-        subtitle: "Chase your dreams with courage and determination! 🌟"
+        subtitle: "Chase your dreams with courage and determination! 🌟",
+        icon: Star,
+        color: "#feca57"
     },
     {
         title: "Keep Pushing!",
         message: "It's not about perfect. It's about effort. And when you implement that effort every day, that's where transformation happens.",
-        subtitle: "Your effort today is an investment in your tomorrow! 📈"
+        subtitle: "Your effort today is an investment in your tomorrow! 📈",
+        icon: Zap,
+        color: "#48dbfb"
     },
     {
         title: "Never Give Up!",
         message: "Fall seven times, stand up eight.",
-        subtitle: "Resilience is your superpower. Use it! ⚡"
+        subtitle: "Resilience is your superpower. Use it! ⚡",
+        icon: Zap,
+        color: "#ff9f43"
     },
     {
         title: "You're Making Progress!",
         message: "Don't watch the clock; do what it does. Keep going.",
-        subtitle: "Time + consistency = Success. You're on the right path! ⏰"
+        subtitle: "Time + consistency = Success. You're on the right path! ⏰",
+        icon: Sun,
+        color: "#f368e0"
     },
     {
         title: "Embrace the Journey!",
         message: "The secret of getting ahead is getting started.",
-        subtitle: "You've already begun. That's the hardest part! 🎯"
+        subtitle: "You've already begun. That's the hardest part! 🎯",
+        icon: Target,
+        color: "#1dd1a1"
     },
     {
         title: "Stay Focused!",
         message: "Your limitation—it's only your imagination.",
-        subtitle: "Break through mental barriers and achieve greatness! 🧠"
+        subtitle: "Break through mental barriers and achieve greatness! 🧠",
+        icon: Sun,
+        color: "#feca57"
     },
     {
         title: "You're Capable!",
         message: "Great things never come from comfort zones.",
-        subtitle: "Embrace the challenge. You're stronger than you think! 💪"
+        subtitle: "Embrace the challenge. You're stronger than you think! 💪",
+        icon: Trophy,
+        color: "#5f27cd"
     },
     {
         title: "Shine Bright!",
         message: "Stars can't shine without darkness.",
-        subtitle: "Your challenges are making you brilliant! ⭐"
+        subtitle: "Your challenges are making you brilliant! ⭐",
+        icon: Star,
+        color: "#feca57"
     },
     {
         title: "One Day at a Time!",
         message: "Little by little, a little becomes a lot.",
-        subtitle: "Small daily improvements lead to stunning results! 🌱"
+        subtitle: "Small daily improvements lead to stunning results! 🌱",
+        icon: Mountain,
+        color: "#10ac84"
     },
     {
         title: "Trust the Process!",
         message: "The only way to do great work is to love what you do.",
-        subtitle: "Find joy in the journey, not just the destination! 😊"
+        subtitle: "Find joy in the journey, not just the destination! 😊",
+        icon: Smile,
+        color: "#ff9f43"
     },
     {
         title: "You're Incredible!",
         message: "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-        subtitle: "Your courage defines you. Keep moving forward! 🦁"
+        subtitle: "Your courage defines you. Keep moving forward! 🦁",
+        icon: Award,
+        color: "#ff6b6b"
     },
     {
         title: "Make It Happen!",
         message: "Don't wait for opportunity. Create it.",
-        subtitle: "You have the power to design your own destiny! 🎨"
+        subtitle: "You have the power to design your own destiny! 🎨",
+        icon: Zap,
+        color: "#2e86de"
     },
     {
         title: "Stay Positive!",
         message: "Positive thinking will let you do everything better than negative thinking will.",
-        subtitle: "Your mindset determines your success! 🌈"
+        subtitle: "Your mindset determines your success! 🌈",
+        icon: Sun,
+        color: "#ff9ff3"
     },
     {
         title: "You're Amazing!",
         message: "Believe you can and you're halfway there.",
-        subtitle: "Self-belief is your greatest asset. Use it wisely! 🌟"
+        subtitle: "Self-belief is your greatest asset. Use it wisely! 🌟",
+        icon: Star,
+        color: "#feca57"
     }
 ];
+
 
 const HeartAnimation = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -111,13 +152,19 @@ const HeartAnimation = () => {
     const handleClick = () => {
         setIsAnimating(true);
         setTimeout(() => {
-            const randomIndex = Math.floor(Math.random() * motivationalMessages.length);
-            setCurrentIndex(randomIndex);
+            let nextIndex;
+            do {
+                nextIndex = Math.floor(Math.random() * motivationalMessages.length);
+            } while (nextIndex === currentIndex); // Prevent repeating the same one
+
+            setCurrentIndex(nextIndex);
             setIsAnimating(false);
         }, 300);
     };
 
     const current = motivationalMessages[currentIndex];
+    const IconComponent = current.icon || Heart;
+    const accentColor = current.color || "#ff6b9d";
 
     return (
         <div
@@ -140,12 +187,12 @@ const HeartAnimation = () => {
                 transition: 'transform 0.3s ease',
                 transform: isAnimating ? 'scale(0.8)' : 'scale(1)'
             }}>
-                <Heart
+                <IconComponent
                     size={120}
-                    color="#ff6b9d"
-                    fill="#ff6b9d"
+                    color={accentColor}
+                    fill={accentColor}
                     style={{
-                        filter: 'drop-shadow(0 0 20px rgba(255, 107, 157, 0.5))'
+                        filter: `drop-shadow(0 0 20px ${accentColor}80)` // 80 is roughly 50% opacity in hex
                     }}
                 />
             </div>
@@ -157,7 +204,7 @@ const HeartAnimation = () => {
                 <h1 style={{
                     fontSize: '32px',
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #ff6b9d 0%, #c471ed 100%)',
+                    background: `linear-gradient(135deg, ${accentColor} 0%, #ffffff 100%)`, // Dynamic gradient
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',

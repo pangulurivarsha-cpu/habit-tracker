@@ -7,24 +7,77 @@
     justify-content: center;
     align-items: center;
     padding: var(--space-4);
+    /* Rich Gradient Background */
+    background:
+        radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.15) 0%, transparent 25%);
+    background-color: var(--bg-main);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background Blobs */
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+    animation: pulseBlob 8s infinite alternate;
+}
+
+.login-container::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(219, 39, 119, 0.15) 0%, transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+    animation: pulseBlob 10s infinite alternate-reverse;
+}
+
+@keyframes pulseBlob {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+
+    100% {
+        transform: scale(1.1) translate(20px, -20px);
+    }
 }
 
 .login-card {
     position: relative;
-    background: var(--glass-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--glass-border);
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
     border-radius: 24px;
-    padding: var(--space-8);
+    padding: 40px;
     width: 100%;
-    max-width: 400px;
-    box-shadow: var(--shadow-2xl);
+    max-width: 420px;
     z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+    box-shadow:
+        0 30px 60px -12px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
 @keyframes slideUp {
@@ -40,13 +93,12 @@
 }
 
 .login-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: var(--space-2);
+    margin-bottom: 8px;
     text-align: center;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #fff 0%, var(--primary-200) 100%);
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -54,8 +106,8 @@
 
 .login-subtitle {
     color: var(--text-secondary);
-    font-size: 0.9375rem;
-    margin-bottom: var(--space-8);
+    font-size: 0.95rem;
+    margin-bottom: 32px;
     text-align: center;
     line-height: 1.5;
     font-weight: 400;
@@ -65,81 +117,82 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 16px;
 }
 
 .styled-input {
     width: 100%;
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 0.9375rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 1rem;
     color: var(--text-primary);
     font-family: var(--font-main);
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
-    min-height: 50px;
-    /* Touch friendly */
+    min-height: 52px;
 }
 
 .styled-input::placeholder {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
 }
 
 .styled-input:focus {
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(0, 0, 0, 0.5);
     border-color: var(--primary-500);
-    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    transform: translateY(-1px);
 }
 
 .styled-input:hover:not(:focus) {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .forgot-password {
     align-self: flex-end;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     color: var(--primary-400);
-    margin-top: var(--space-1);
+    margin-top: 4px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s;
+    opacity: 0.9;
 }
 
 .forgot-password:hover {
     color: var(--primary-300);
     text-decoration: underline;
+    opacity: 1;
 }
 
 .login-btn {
-    background: linear-gradient(135deg, var(--primary-600), var(--primary-500));
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 1rem;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 1.05rem;
     font-weight: 600;
     color: white;
     cursor: pointer;
-    margin-top: var(--space-6);
+    margin-top: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: var(--space-2);
+    gap: 10px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     width: 100%;
-    min-height: 50px;
-    /* Touch friendly */
-    box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
+    box-shadow: 0 4px 20px -5px rgba(99, 102, 241, 0.4);
 }
 
 .login-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3);
-    background: linear-gradient(135deg, var(--primary-500), var(--primary-400));
+    box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.5);
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-400) 100%);
 }
 
 .login-btn:active {
@@ -148,33 +201,32 @@
 
 .create-account-btn {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 0.9375rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 1rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: white;
     cursor: pointer;
-    margin-top: var(--space-4);
+    margin-top: 16px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: var(--space-2);
+    gap: 10px;
     transition: all 0.2s;
     width: 100%;
-    min-height: 50px;
 }
 
 .create-account-btn:hover {
     background: rgba(255, 255, 255, 0.05);
     border-color: var(--primary-500);
-    color: var(--text-primary);
+    transform: translateY(-1px);
 }
 
 .switch-text,
 .already-have-account {
-    margin-top: var(--space-6);
-    font-size: 0.875rem;
+    margin-top: 24px;
+    font-size: 0.9rem;
     color: var(--text-muted);
     text-align: center;
     cursor: pointer;
@@ -184,28 +236,41 @@
 
 .switch-text:hover,
 .already-have-account:hover {
-    color: var(--primary-300);
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive adjustments */
+/* --- Responsive Adjustments --- */
+/* Mobile (Phone) */
 @media (max-width: 480px) {
     .login-container {
-        padding: var(--space-4);
-        align-items: flex-start;
-        /* Better for virtual keyboard */
-        padding-top: 10vh;
+        padding: 16px;
+        align-items: center;
+        /* Keep centered on mobile too */
     }
 
     .login-card {
-        padding: var(--space-6);
-        border: none;
-        background: transparent;
-        box-shadow: none;
-        backdrop-filter: none;
+        padding: 24px;
+        /* Slightly less padding */
+        /* KEEP the glass effect but make it fit nicely */
+        max-width: 100%;
+        border-radius: 20px;
+        /* Ensure it doesn't touch edges unpleasantly */
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-title {
+        font-size: 2rem;
     }
 
     .styled-input {
-        background: rgba(15, 23, 42, 0.6);
-        /* Darker on mobile */
+        font-size: 16px;
+        /* Prevent zoom on iOS */
+        padding: 14px 16px;
+    }
+
+    .login-btn,
+    .create-account-btn {
+        padding: 14px;
     }
 }

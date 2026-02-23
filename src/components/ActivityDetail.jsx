@@ -7,7 +7,8 @@ export const ActivityDetail = () => {
     const { activityName } = useParams();
     const navigate = useNavigate();
 
-    const [participants, setParticipants] = useState([]);
+    // Store participants per month-year combination
+    const [participantsByMonth, setParticipantsByMonth] = useState({});
     const [showAddModal, setShowAddModal] = useState(false);
     const [showTimingsModal, setShowTimingsModal] = useState(false);
     const [newName, setNewName] = useState('');
@@ -28,6 +29,14 @@ export const ActivityDetail = () => {
     const [endMinute2, setEndMinute2] = useState('00');
     const [endPeriod2, setEndPeriod2] = useState('PM');
 
+    // New participant details state
+    const [newClasses, setNewClasses] = useState('');
+    const [newPaidStatus, setNewPaidStatus] = useState(false); // false = Unpaid, true = Paid
+    const [newPaymentDate, setNewPaymentDate] = useState('');
+
+    // Expanded row state
+    const [expandedParticipantId, setExpandedParticipantId] = useState(null);
+
     // Month and Year state
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
@@ -46,10 +55,18 @@ export const ActivityDetail = () => {
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
+    // Helper to get month key
+    const getMonthKey = (year, month) => `${year}-${String(month + 1).padStart(2, '0')}`;
+
+    // Current month key for getting participants
+    const currentMonthKey = getMonthKey(selectedYear, selectedMonth);
+    const currentParticipants = participantsByMonth[currentMonthKey] || [];
+
     useEffect(() => {
-        const savedParticipants = localStorage.getItem(`activity_${activityName}_participants`);
-        if (savedParticipants) {
-            setParticipants(JSON.parse(savedParticipants));
+        // Load all participants by month
+        const savedData = localStorage.getItem(`activity_${activityName}_participantsByMonth`);
+        if (savedData) {
+            setParticipantsByMonth(JSON.parse(savedData));
         }
 
         const savedTimings = localStorage.getItem(`activity_${activityName}_timings`);
@@ -58,9 +75,51 @@ export const ActivityDetail = () => {
         }
     }, [activityName]);
 
-    const saveParticipants = (updatedParticipants) => {
-        setParticipants(updatedParticipants);
-        localStorage.setItem(`activity_${activityName}_participants`, JSON.stringify(updatedParticipants));
+    const saveParticipantsForMonth = (monthKey, updatedParticipants) => {
+        const updated = { ...participantsByMonth, [monthKey]: updatedParticipants };
+        setParticipantsByMonth(updated);
+        localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updated));
+    };
+
+    // Cleanup legacy data effect
+    useEffect(() => {
+        if (!currentParticipants.length) return;
+
+        const cleanParticipants = currentParticipants.filter(p => {
+            // Keep if it has classes OR payment date OR paid status is true OR has some attendance
+            const hasDetails = p.classes || p.paymentDate || p.paidStatus || Object.keys(p.attendance || {}).length > 0;
+            return hasDetails;
+        });
+
+        if (cleanParticipants.length !== currentParticipants.length) {
+            console.log("Cleaning up incomplete participants...");
+            saveParticipantsForMonth(currentMonthKey, cleanParticipants);
+        }
+    }, [currentParticipants.length, currentMonthKey]); // Only run when list length changes or month changes
+
+    const toggleParticipantExpand = (id) => {
+        setExpandedParticipantId(expandedParticipantId === id ? null : id);
+    };
+
+    const generateGoogleCalendarLink = (name, date) => {
+        if (!date) return '#';
+        const title = encodeURIComponent(`${name} - ${activityName} Class Payment`);
+        const details = encodeURIComponent(`Payment due/made for ${activityName} classes.`);
+        const d = new Date(date);
+        const start = d.toISOString().replace(/-|:|\.\d\d\d/g, ""); // Basic ISO format required by GCal
+        const end = d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+        return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&dates=${start}/${end}`;
+    };
+
+    const togglePaidStatus = (participantId) => {
+        const updated = currentParticipants.map(p => {
+            if (p.id === participantId) {
+                return { ...p, paidStatus: !p.paidStatus };
+            }
+            return p;
+        });
+        saveParticipantsForMonth(currentMonthKey, updated);
     };
 
     const handleSaveTimings = () => {
@@ -72,24 +131,67 @@ export const ActivityDetail = () => {
 
     const handleAddParticipant = () => {
         if (!newName.trim()) return;
+
+        // Build all updates at once to avoid state batching issues
+        const updatedMonths = { ...participantsByMonth };
+
+        // Add to current month
         const newParticipant = {
             id: Date.now(),
             name: newName.trim(),
+            classes: newClasses,
+            paidStatus: newPaidStatus,
+            paymentDate: newPaymentDate,
             attendance: {}
         };
-        saveParticipants([...participants, newParticipant]);
+        const currentParticipantsList = updatedMonths[currentMonthKey] || [];
+        updatedMonths[currentMonthKey] = [...currentParticipantsList, newParticipant];
+
+        // Auto-propagate to next 6 months
+        for (let i = 1; i <= 6; i++) {
+            const futureDate = new Date(selectedYear, selectedMonth + i, 1);
+            const futureYear = futureDate.getFullYear();
+            const futureMonth = futureDate.getMonth();
+            const futureMonthKey = getMonthKey(futureYear, futureMonth);
+
+            // Get existing participants for that future month from our local copy
+            const futureParticipants = updatedMonths[futureMonthKey] || [];
+
+            // Only add if a participant with the same name doesn't already exist
+            const alreadyExists = futureParticipants.some(p => p.name.toLowerCase() === newName.trim().toLowerCase());
+            if (!alreadyExists) {
+                const futureParticipant = {
+                    id: Date.now() + i * 1000,
+                    name: newName.trim(),
+                    classes: newClasses,
+                    paidStatus: newPaidStatus, // Carry over status? Or reset? Let's carry over for now
+                    paymentDate: newPaymentDate,
+                    attendance: {}
+                };
+                updatedMonths[futureMonthKey] = [...futureParticipants, futureParticipant];
+            }
+        }
+
+        // Save all at once
+        setParticipantsByMonth(updatedMonths);
+        localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
+
         setNewName('');
+        setNewClasses('');
+        setNewPaidStatus(false);
+        setNewPaymentDate('');
         setShowAddModal(false);
     };
 
     const handleRemoveParticipant = (id) => {
-        if (confirm('Remove this person?')) {
-            saveParticipants(participants.filter(p => p.id !== id));
+        const participantName = currentParticipants.find(p => p.id === id)?.name || 'this person';
+        if (confirm(`Remove ${participantName} from ${months[selectedMonth]} ${selectedYear}?`)) {
+            saveParticipantsForMonth(currentMonthKey, currentParticipants.filter(p => p.id !== id));
         }
     };
 
     const toggleAttendance = (participantId, dateStr) => {
-        const updated = participants.map(p => {
+        const updated = currentParticipants.map(p => {
             if (p.id === participantId) {
                 const newAttendance = { ...p.attendance };
                 newAttendance[dateStr] = !newAttendance[dateStr];
@@ -97,7 +199,7 @@ export const ActivityDetail = () => {
             }
             return p;
         });
-        saveParticipants(updated);
+        saveParticipantsForMonth(currentMonthKey, updated);
     };
 
     const handleScroll = (e) => {
@@ -154,12 +256,21 @@ export const ActivityDetail = () => {
 
     const calculateTotal = (participant) => {
         const dates = viewMode === 'week' ? getWeekDates() : getCalendarDates().filter(d => d !== null);
-        let count = 0;
+        let attendedCount = 0;
+
+        // Count attendance for the current view (or mostly current month context)
+        // If we want total remaining classes, we should probably count ALL attendance for this participant?
+        // But the current storage is month-based. So let's count attendance in this month/view.
         dates.forEach(date => {
             const dateStr = date.toISOString().split('T')[0];
-            if (participant.attendance[dateStr]) count++;
+            if (participant.attendance[dateStr]) attendedCount++;
         });
-        return count;
+
+        const totalClasses = parseInt(participant.classes) || 0;
+        if (totalClasses > 0) {
+            return totalClasses - attendedCount;
+        }
+        return attendedCount;
     };
 
     const displayDates = viewMode === 'week' ? getWeekDates() : getCalendarDates();
@@ -224,14 +335,43 @@ export const ActivityDetail = () => {
                         </div>
                     </div>
 
-                    {participants.map((participant, pIndex) => {
+                    {currentParticipants.map((participant, pIndex) => {
                         const dates = viewMode === 'week' ? getWeekDates() : displayDates;
                         return (
                             <div key={participant.id} className="participant-row">
                                 <div className="participant-name">
-                                    <span>{participant.name}</span>
-                                    <button onClick={() => handleRemoveParticipant(participant.id)} className="remove-btn-inline">
-                                        <X size={14} />
+                                    <div className="name-container">
+                                        <span className="name-text">{participant.name}</span>
+                                        <div className="inline-details">
+                                            <button
+                                                className={`status-badge ${participant.paidStatus ? 'paid' : 'unpaid'}`}
+                                                onClick={() => togglePaidStatus(participant.id)}
+                                                title={participant.paidStatus ? "Paid - Click to toggle" : "Unpaid - Click to toggle"}
+                                            >
+                                                {participant.paidStatus ? 'Paid' : 'Unpaid'}
+                                            </button>
+                                            {participant.paymentDate && (
+                                                <a
+                                                    href={generateGoogleCalendarLink(participant.name, participant.paymentDate)}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="date-badge"
+                                                    title="Add to Google Calendar"
+                                                >
+                                                    {(() => {
+                                                        const [y, m, d] = participant.paymentDate.split('-');
+                                                        return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                                    })()}
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemoveParticipant(participant.id)}
+                                        className="remove-btn-inline"
+                                        title="Remove from this month"
+                                    >
+                                        <X size={16} />
                                     </button>
                                 </div>
 
@@ -251,8 +391,13 @@ export const ActivityDetail = () => {
                                                 }
                                                 const dateStr = date.toISOString().split('T')[0];
                                                 const isChecked = participant.attendance[dateStr] || false;
+
+                                                // Create local date string for exact UI comparison (avoids UTC offset bugs crossing midnight)
+                                                const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                                const isPaymentDate = participant.paymentDate === localDateStr;
+
                                                 return (
-                                                    <label key={dateStr} className="checkbox-cell">
+                                                    <label key={dateStr} className={`checkbox-cell ${isPaymentDate ? 'payment-date-highlight' : ''}`} title={isPaymentDate ? "Payment Date" : ""}>
                                                         <span className="date-num">{date.getDate()}</span>
                                                         <input
                                                             type="checkbox"
@@ -300,19 +445,69 @@ export const ActivityDetail = () => {
             {/* Add Participant Modal */}
             {showAddModal && (
                 <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h3>Add Participant</h3>
-                        <input
-                            type="text"
-                            placeholder="Enter name"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleAddParticipant()}
-                            autoFocus
-                        />
-                        <div className="modal-actions">
-                            <button onClick={() => setShowAddModal(false)} className="cancel-btn">Cancel</button>
-                            <button onClick={handleAddParticipant} className="confirm-btn">Add</button>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Add Participant</h2>
+                            <button onClick={() => setShowAddModal(false)} className="close-btn">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Name</label>
+                                <input
+                                    type="text"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                    placeholder="Enter name"
+                                    className="modal-input"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>No. of Classes</label>
+                                    <input
+                                        type="number"
+                                        value={newClasses}
+                                        onChange={(e) => setNewClasses(e.target.value)}
+                                        placeholder="0"
+                                        className="modal-input"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Details</label>
+                                    <div className="toggle-wrapper" onClick={() => setNewPaidStatus(!newPaidStatus)}>
+                                        <div className={`status-toggle ${newPaidStatus ? 'active' : ''}`}>
+                                            {newPaidStatus ? 'Paid' : 'Unpaid'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Payment Date</label>
+                                <div className="date-input-wrapper">
+                                    <input
+                                        type="date"
+                                        value={newPaymentDate}
+                                        onChange={(e) => setNewPaymentDate(e.target.value)}
+                                        className="modal-input"
+                                    />
+                                    <span className="calendar-icon-indicator">📅</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button onClick={() => setShowAddModal(false)} className="cancel-btn">
+                                Cancel
+                            </button>
+                            <button onClick={handleAddParticipant} className="confirm-btn">
+                                Add
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -405,7 +600,8 @@ export const ActivityDetail = () => {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };

@@ -4,11 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, X, MoreVertical, Trash2 } from 'lucide-react';
 import './Dashboard.css';
 
+// Generate fast image URL using LoremFlickr API
+const getActivityImage = (name) => {
+    // Clean activity name for search
+    const cleanName = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+    const searchTerm = cleanName.replace(/\s+/g, ',');
+
+    // LoremFlickr provides real images dynamically (Unsplash Source is deprecated)
+    return `https://loremflickr.com/800/600/${searchTerm},sport/all`;
+};
+
 const DEFAULT_ACTIVITIES = [
-    { id: 'tennis', name: 'Tennis', imgUrl: 'https://loremflickr.com/800/600/tennis,sport/all?lock=1' },
-    { id: 'badminton', name: 'Badminton', imgUrl: 'https://loremflickr.com/800/600/badminton,sport/all?lock=2' },
-    { id: 'pickleball', name: 'Pickleball', imgUrl: 'https://loremflickr.com/800/600/pickleball,sport/all?lock=3' },
-    { id: 'basketball', name: 'Basket Ball', imgUrl: 'https://loremflickr.com/800/600/basketball,sport/all?lock=4' },
+    { id: 'tennis', name: 'Tennis' },
+    { id: 'badminton', name: 'Badminton' },
+    { id: 'pickleball', name: 'Pickleball' },
+    { id: 'basketball', name: 'Basket Ball' },
 ];
 
 export const Dashboard = () => {
@@ -40,26 +50,8 @@ export const Dashboard = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // NEW: Force-Migrate ALL activities to reliable LoremFlickr images
-    useEffect(() => {
-        if (activities && activities.length > 0) {
-            activities.forEach(activity => {
-                // Check if image is missing OR if it's NOT a LoremFlickr image (e.g. old Unsplash, Pollinations, etc.)
-                // This forces consistency across all cards.
-                const isLoremFlickr = activity.imgUrl && activity.imgUrl.includes('loremflickr.com');
-
-                if (!activity.imgUrl || !isLoremFlickr) {
-                    const searchTerm = activity.name.toLowerCase().replace(/\s+/g, ',');
-                    // Add a random cache buster to ensure uniqueness
-                    const randomLock = Math.floor(Math.random() * 10000);
-                    const newImgUrl = `https://loremflickr.com/800/600/${searchTerm},sport/all?lock=${randomLock}`;
-
-                    console.log(`🖼️ Migrating image for ${activity.name} to LoremFlickr...`);
-                    updateActivityImage(activity.id, newImgUrl);
-                }
-            });
-        }
-    }, [activities]);
+    // Remove the migration effect - no longer needed
+    // Images are now instant gradients
 
     const handleSelectActivity = (activity) => {
         navigate(`/activity/${encodeURIComponent(activity.name)}`);
@@ -131,7 +123,7 @@ export const Dashboard = () => {
             <header className="dashboard-header animate-fade-in" style={{ marginBottom: '32px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end' }}>
                     <div>
-                        <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 500 }}>{formattedDate}</div>
+                        <div style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 500 }}>{formattedDate}</div>
                         <h1 className="greeting-text" style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>
                             {greeting}, <span className="text-gradient">{user?.name || "User"}</span>
                         </h1>
@@ -168,25 +160,26 @@ export const Dashboard = () => {
                         }}
                         onClick={() => handleSelectActivity(activity)}
                     >
-                        {/* Background Image with Gradient Overlay */}
+                        {/* Fast Unsplash image background */}
                         <div style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             width: '100%',
                             height: '100%',
-                            backgroundImage: `url(${activity.imgUrl || 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=400'})`,
+                            backgroundImage: `url(${getActivityImage(activity.name)})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             zIndex: 0
                         }}></div>
+                        {/* Dark gradient overlay for text readability */}
                         <div style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             width: '100%',
                             height: '100%',
-                            background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.3))',
+                            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.2))',
                             zIndex: 1
                         }}></div>
 

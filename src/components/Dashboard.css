@@ -59,14 +59,16 @@
 }
 
 .greeting-text {
-    font-size: 24px;
+    font-size: 26px;
+    /* Increased from 24px */
     font-weight: 300;
     color: var(--text-secondary);
     margin: 0;
 }
 
 .date-text {
-    font-size: 20px;
+    font-size: 24px;
+    /* Increased from 20px */
     font-weight: 600;
     margin-top: 5px;
     color: var(--text-primary);
@@ -81,7 +83,8 @@
 }
 
 .section-title {
-    font-size: 18px;
+    font-size: 22px;
+    /* Increased from 18px */
     font-weight: 500;
     color: var(--text-primary);
     margin: 0;
@@ -91,7 +94,8 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 14px;
+    font-size: 16px;
+    /* Increased from 14px */
     color: var(--text-primary);
     cursor: pointer;
     font-weight: 600;
@@ -144,7 +148,8 @@
     background: rgba(255, 255, 255, 0.85);
     /* Light strip at bottom like images */
     color: #333;
-    font-size: 13px;
+    font-size: 16px;
+    /* Increased from 13px */
     font-weight: 600;
     text-align: center;
 }

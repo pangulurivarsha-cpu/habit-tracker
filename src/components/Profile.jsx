@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useUser } from '../App';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Lock, Mail, Phone, User as UserIcon, Camera, Edit2, Check, X, ChevronRight } from 'lucide-react';
-import { updatePassword, updateProfile } from 'firebase/auth';
+import { updatePassword, updateProfile, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 
@@ -20,6 +20,8 @@ export const Profile = () => {
     const [profileImage, setProfileImage] = useState(localStorage.getItem('profileImage') || null);
 
     // Password Form State
+    // Password Form State
+    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -129,20 +131,34 @@ export const Profile = () => {
             return;
         }
 
+        if (!currentPassword) {
+            alert("Please enter your current password to confirm changes.");
+            return;
+        }
+
         try {
             const user = auth.currentUser;
-            if (user) {
+            if (user && user.email) {
+                // Re-authenticate to prevent 'auth/requires-recent-login'
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                await reauthenticateWithCredential(user, credential);
+
                 await updatePassword(user, newPassword);
                 alert("Password updated successfully!");
                 setIsChangingPassword(false);
                 setNewPassword('');
                 setConfirmPassword('');
+                setCurrentPassword('');
             } else {
                 alert("User session not found. Please log in again.");
             }
         } catch (err) {
             console.error("Password update error:", err);
-            alert(err.message || "Failed to update password");
+            if (err.code === 'auth/wrong-password') {
+                alert("Incorrect current password.");
+            } else {
+                alert(err.message || "Failed to update password");
+            }
         }
     };
 
@@ -208,58 +224,41 @@ export const Profile = () => {
                                 onClick={() => fileInputRef.current?.click()}
                                 style={{
                                     position: 'absolute',
-                                    bottom: '5px',
-                                    right: '5px',
-                                    backgroundColor: '#1a1a2e',
+                                    bottom: '0',
+                                    right: '0',
+                                    backgroundColor: 'var(--primary-600)',
                                     borderRadius: '50%',
-                                    padding: '10px',
-                                    border: '2px solid rgba(255,255,255,0.2)',
+                                    padding: '8px',
+                                    border: '3px solid var(--bg-main)', // Creates a 'cutout' look
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                                    zIndex: 2
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                    zIndex: 10
                                 }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = '#64ffda';
-                                    e.currentTarget.style.transform = 'scale(1.1)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = '#1a1a2e';
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }}
+                                className="hover:scale-110 active:scale-95"
                             >
-                                <Camera size={18} color="white" />
+                                <Camera size={16} color="white" />
                             </div>
 
-                            {/* Remove Button (only if image exists) */}
+                            {/* Remove Button (top-right, subtle) */}
                             {profileImage && (
                                 <div
                                     onClick={handleRemoveImage}
                                     style={{
                                         position: 'absolute',
-                                        top: '5px',
-                                        right: '5px',
-                                        backgroundColor: '#ff6b6b',
+                                        top: '0',
+                                        right: '0',
+                                        backgroundColor: 'var(--slate-700)',
                                         borderRadius: '50%',
-                                        padding: '8px',
-                                        border: '2px solid rgba(255,255,255,0.3)',
+                                        padding: '6px',
+                                        border: '3px solid var(--bg-main)',
                                         cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: '0 4px 12px rgba(255,107,107,0.4)',
-                                        zIndex: 2
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.background = '#ff5252';
-                                        e.currentTarget.style.transform = 'scale(1.1)';
-                                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(255,107,107,0.6)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.background = '#ff6b6b';
-                                        e.currentTarget.style.transform = 'scale(1)';
-                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,107,107,0.4)';
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                        zIndex: 10
                                     }}
                                 >
-                                    <X size={16} color="white" />
+                                    <X size={12} color="var(--slate-300)" />
                                 </div>
                             )}
                         </div>
@@ -412,6 +411,25 @@ export const Profile = () => {
                         </div>
                         <h3 style={{ fontSize: '18px', fontWeight: 500 }}>Create New Password</h3>
                         <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>Your new password must be different from previous used passwords.</p>
+                    </div>
+
+                    <div className="form-group">
+                        <label style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginLeft: '5px' }}>Current Password</label>
+                        <input
+                            type="password"
+                            style={{
+                                background: 'rgba(0,0,0,0.3)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                padding: '16px',
+                                borderRadius: '12px',
+                                color: 'white',
+                                outline: 'none',
+                                width: '100%'
+                            }}
+                            placeholder="Enter current password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                        />
                     </div>
 
                     <div className="form-group">
