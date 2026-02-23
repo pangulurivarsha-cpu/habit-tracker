@@ -243,9 +243,9 @@ export const ActivityDetail = () => {
         return dates;
     };
 
-    // Get dates for current week (based on TODAY)
     const getWeekDates = () => {
         const today = new Date(); // Always use today for week view
+        today.setHours(0, 0, 0, 0); // Normalize time to avoid localized shifting
         const dayOfWeek = today.getDay();
         const dates = [];
 
