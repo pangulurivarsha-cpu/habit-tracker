@@ -148,6 +148,34 @@ export const ActivityDetail = () => {
         const currentParticipantsList = updatedMonths[currentMonthKey] || [];
         updatedMonths[currentMonthKey] = [...currentParticipantsList, newParticipant];
 
+        // Auto-propagate to next 6 months ONLY if they have a class count (package carrying forward)
+        // This stops drop-ins from flooding future months unnecessarily, but allows packages to properly track forwards
+        if (newClasses && parseInt(newClasses) > 0) {
+            for (let i = 1; i <= 6; i++) {
+                const futureDate = new Date(selectedYear, selectedMonth + i, 1);
+                const futureYear = futureDate.getFullYear();
+                const futureMonth = futureDate.getMonth();
+                const futureMonthKey = getMonthKey(futureYear, futureMonth);
+
+                // Get existing participants for that future month from our local copy
+                const futureParticipants = updatedMonths[futureMonthKey] || [];
+
+                // Only add if a participant with the same name doesn't already exist
+                const alreadyExists = futureParticipants.some(p => p.name.toLowerCase() === newName.trim().toLowerCase());
+                if (!alreadyExists) {
+                    const futureParticipant = {
+                        id: baseId, // Reuse the same ID so we can track them globally
+                        name: newName.trim(),
+                        classes: newClasses,
+                        paidStatus: newPaidStatus,
+                        paymentDate: newPaymentDate,
+                        attendance: {}
+                    };
+                    updatedMonths[futureMonthKey] = [...futureParticipants, futureParticipant];
+                }
+            }
+        }
+
         // Save all at once
         setParticipantsByMonth(updatedMonths);
         localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
@@ -398,20 +426,23 @@ export const ActivityDetail = () => {
                                                 if (!date) {
                                                     return <div key={`empty-${idx}`} className="checkbox-cell empty"></div>;
                                                 }
-                                                const dateStr = date.toISOString().split('T')[0];
-                                                const isChecked = participant.attendance[dateStr] || false;
 
-                                                // Create local date string for exact UI comparison (avoids UTC offset bugs crossing midnight)
+                                                // Ensure consistency between week and month views by relying strictly on local timezone values
                                                 const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+                                                // Support legacy UTC keys temporarily by checking both
+                                                const utcDateStr = date.toISOString().split('T')[0];
+                                                const isChecked = participant.attendance[localDateStr] || participant.attendance[utcDateStr] || false;
+
                                                 const isPaymentDate = participant.paymentDate === localDateStr;
 
                                                 return (
-                                                    <label key={dateStr} className={`checkbox-cell ${isPaymentDate ? 'payment-date-highlight' : ''}`} title={isPaymentDate ? "Payment Date" : ""}>
+                                                    <label key={localDateStr} className={`checkbox-cell ${isPaymentDate ? 'payment-date-highlight' : ''}`} title={isPaymentDate ? "Payment Date" : ""}>
                                                         <span className="date-num">{date.getDate()}</span>
                                                         <input
                                                             type="checkbox"
                                                             checked={isChecked}
-                                                            onChange={() => toggleAttendance(participant.id, dateStr)}
+                                                            onChange={() => toggleAttendance(participant.id, localDateStr)}
                                                         />
                                                     </label>
                                                 );
