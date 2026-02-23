@@ -10,8 +10,15 @@ const getActivityImage = (name) => {
     const cleanName = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
     const searchTerm = cleanName.replace(/\s+/g, ',');
 
-    // LoremFlickr provides real images dynamically (Unsplash Source is deprecated)
-    return `https://loremflickr.com/800/600/${searchTerm},sport/all`;
+    // Generate a deterministic hash from the name to keep the image static
+    let hash = 0;
+    for (let i = 0; i < cleanName.length; i++) {
+        hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const lockId = Math.abs(hash % 1000) + 1; // 1 to 1000 lock ID
+
+    // LoremFlickr provides real images dynamically, ?lock keeps it consistent
+    return `https://loremflickr.com/800/600/${searchTerm},sport/all?lock=${lockId}`;
 };
 
 const DEFAULT_ACTIVITIES = [

@@ -148,28 +148,30 @@ export const ActivityDetail = () => {
         const currentParticipantsList = updatedMonths[currentMonthKey] || [];
         updatedMonths[currentMonthKey] = [...currentParticipantsList, newParticipant];
 
-        // Auto-propagate to next 6 months
-        for (let i = 1; i <= 6; i++) {
-            const futureDate = new Date(selectedYear, selectedMonth + i, 1);
-            const futureYear = futureDate.getFullYear();
-            const futureMonth = futureDate.getMonth();
-            const futureMonthKey = getMonthKey(futureYear, futureMonth);
+        // Auto-propagate to next 6 months ONLY if they have a class count (package carrying forward)
+        if (newClasses && parseInt(newClasses) > 0) {
+            for (let i = 1; i <= 6; i++) {
+                const futureDate = new Date(selectedYear, selectedMonth + i, 1);
+                const futureYear = futureDate.getFullYear();
+                const futureMonth = futureDate.getMonth();
+                const futureMonthKey = getMonthKey(futureYear, futureMonth);
 
-            // Get existing participants for that future month from our local copy
-            const futureParticipants = updatedMonths[futureMonthKey] || [];
+                // Get existing participants for that future month from our local copy
+                const futureParticipants = updatedMonths[futureMonthKey] || [];
 
-            // Only add if a participant with the same name doesn't already exist
-            const alreadyExists = futureParticipants.some(p => p.name.toLowerCase() === newName.trim().toLowerCase());
-            if (!alreadyExists) {
-                const futureParticipant = {
-                    id: baseId, // Reuse the same ID so we can track them globally
-                    name: newName.trim(),
-                    classes: newClasses,
-                    paidStatus: newPaidStatus, // Carry over status? Or reset? Let's carry over for now
-                    paymentDate: newPaymentDate,
-                    attendance: {}
-                };
-                updatedMonths[futureMonthKey] = [...futureParticipants, futureParticipant];
+                // Only add if a participant with the same name doesn't already exist
+                const alreadyExists = futureParticipants.some(p => p.name.toLowerCase() === newName.trim().toLowerCase());
+                if (!alreadyExists) {
+                    const futureParticipant = {
+                        id: baseId, // Reuse the same ID so we can track them globally
+                        name: newName.trim(),
+                        classes: newClasses,
+                        paidStatus: newPaidStatus, // Carry over status? Or reset? Let's carry over for now
+                        paymentDate: newPaymentDate,
+                        attendance: {}
+                    };
+                    updatedMonths[futureMonthKey] = [...futureParticipants, futureParticipant];
+                }
             }
         }
 
