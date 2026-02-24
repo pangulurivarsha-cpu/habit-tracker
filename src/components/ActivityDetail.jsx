@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, X, Clock, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { capitalizeName } from './Dashboard';
 import './ActivityDetail.css';
 
 export const ActivityDetail = () => {
@@ -237,7 +238,7 @@ export const ActivityDetail = () => {
         const baseId = Date.now(); // Generate ONE ID for all months
         const newParticipant = {
             id: baseId,
-            name: newName.trim(),
+            name: capitalizeName(newName.trim()),
             classes: newClasses,
             paidStatus: newPaidStatus,
             paymentDate: newPaymentDate,
@@ -281,7 +282,7 @@ export const ActivityDetail = () => {
                 if (p.id === editingParticipant.id) {
                     return {
                         ...p,
-                        name: newName.trim(),
+                        name: capitalizeName(newName.trim()),
                         classes: newClasses,
                         paidStatus: newPaidStatus,
                         paymentDate: newPaymentDate
@@ -416,7 +417,7 @@ export const ActivityDetail = () => {
                         Back
                     </button>
                     <div className="activity-info">
-                        <h1>{activityName}</h1>
+                        <h1>{capitalizeName(activityName)}</h1>
                         <div className="timings-display">
                             <span>Timings: {timings}</span>
                             <button onClick={() => setShowTimingsModal(true)} className="edit-timings-btn">
@@ -513,7 +514,7 @@ export const ActivityDetail = () => {
                             <div key={participant.id} className={`participant-row ${isCompleted ? 'completed-participant' : ''}`}>
                                 <div className="participant-name">
                                     <div className="name-container">
-                                        <span className="name-text">{participant.name}</span>
+                                        <span className="name-text">{capitalizeName(participant.name)}</span>
                                         <div className="inline-details">
                                             <button
                                                 className={`status-badge ${participant.paidStatus ? 'paid' : 'unpaid'}`}
