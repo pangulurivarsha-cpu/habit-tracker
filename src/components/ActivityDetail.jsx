@@ -49,6 +49,9 @@ export const ActivityDetail = () => {
     const [maxScrollWidth, setMaxScrollWidth] = useState(0);
     const scrollMasterRef = useRef(null);
 
+    // Filter state
+    const [filterMode, setFilterMode] = useState('all'); // 'all', 'active', 'completed'
+
 
 
     // Generate years (3 previous + current + 50 future = 54 years)
@@ -125,8 +128,23 @@ export const ActivityDetail = () => {
         return globalAttendedCount;
     };
 
-    // Dynamically carry forward participants from previous months
-    const savedCurrentParticipants = participantsByMonth[currentMonthKey] || [];
+    // Dynamically filter current month's explicitly saved participants to prune legacy forwards
+    const rawCurrentParticipants = participantsByMonth[currentMonthKey] || [];
+    const savedCurrentParticipants = rawCurrentParticipants.filter(p => {
+        const remaining = p.classes ? calculateTotal(p) : 1;
+        // Check if they have ANY actual ticks in the current month rendering
+        const hasAttendanceThisMonth = Object.keys(p.attendance || {}).some(dateStr => {
+            return dateStr.startsWith(currentMonthKey) && p.attendance[dateStr] === true;
+        });
+
+        // If they have a defined package size, 0 classes left globally, AND no activity THIS month...
+        // They are a legacy ghost from the old manual adding bug. Strip them from this month's local view to keep it clean.
+        if (parseInt(p.classes) > 0 && remaining <= 0 && !hasAttendanceThisMonth) {
+            return false;
+        }
+        return true;
+    });
+
     const carriedForwardParticipants = [];
 
     Object.keys(participantsByMonth).forEach(monthKey => {
@@ -355,8 +373,8 @@ export const ActivityDetail = () => {
 
     const displayDates = viewMode === 'week' ? getWeekDates() : getCalendarDates();
 
-    // Determine active vs completed status and sort
-    const sortedParticipants = [...currentParticipants].sort((a, b) => {
+    // Determine active vs completed status and sort ALL current participants
+    const sortedAllParticipants = [...currentParticipants].sort((a, b) => {
         const totalClassesA = parseInt(a.classes) || 0;
         const totalClassesB = parseInt(b.classes) || 0;
 
@@ -369,6 +387,24 @@ export const ActivityDetail = () => {
         if (isCompletedA && !isCompletedB) return 1;  // A goes down
         if (!isCompletedA && isCompletedB) return -1; // B goes down
         return 0; // Keep current order otherwise
+    });
+
+    // Calculate Summary Stats
+    const totalUsersCount = sortedAllParticipants.length;
+    const activeUsersCount = sortedAllParticipants.filter(p => {
+        const t = parseInt(p.classes) || 0;
+        return t === 0 || calculateTotal(p) > 0;
+    }).length;
+    const completedUsersCount = totalUsersCount - activeUsersCount;
+
+    // Apply the active UI Filter for rendering
+    const displayParticipants = sortedAllParticipants.filter(p => {
+        if (filterMode === 'all') return true;
+        const total = parseInt(p.classes) || 0;
+        const isActive = total === 0 || calculateTotal(p) > 0;
+        if (filterMode === 'active') return isActive;
+        if (filterMode === 'completed') return !isActive;
+        return true;
     });
 
     return (
@@ -411,6 +447,42 @@ export const ActivityDetail = () => {
                 </div>
 
                 <div className="activity-content-compact">
+                    {/* Stats and Filter Row */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '12px 16px',
+                        background: 'rgba(0,0,0,0.2)',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        fontSize: '0.9rem',
+                        overflowX: 'auto',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <span
+                                onClick={() => setFilterMode('all')}
+                                style={{ color: filterMode === 'all' ? 'var(--primary-400)' : 'var(--text-main)', cursor: 'pointer', fontWeight: filterMode === 'all' ? 600 : 400 }}
+                            >
+                                Total Users: {totalUsersCount}
+                            </span>
+                            <span style={{ color: 'var(--border-subtle)' }}>|</span>
+                            <span
+                                onClick={() => setFilterMode('active')}
+                                style={{ color: filterMode === 'active' ? 'var(--primary-400)' : 'var(--text-main)', cursor: 'pointer', fontWeight: filterMode === 'active' ? 600 : 400 }}
+                            >
+                                Active: {activeUsersCount}
+                            </span>
+                            <span style={{ color: 'var(--border-subtle)' }}>|</span>
+                            <span
+                                onClick={() => setFilterMode('completed')}
+                                style={{ color: filterMode === 'completed' ? 'var(--primary-400)' : 'var(--text-main)', cursor: 'pointer', fontWeight: filterMode === 'completed' ? 600 : 400 }}
+                            >
+                                Completed: {completedUsersCount}
+                            </span>
+                        </div>
+                    </div>
+
                     <div className="compact-grid-header">
                         <div className="header-names">Names</div>
                         <div className="header-calendar">
@@ -431,7 +503,7 @@ export const ActivityDetail = () => {
                         </div>
                     </div>
 
-                    {sortedParticipants.map((participant, pIndex) => {
+                    {displayParticipants.map((participant, pIndex) => {
                         const dates = viewMode === 'week' ? getWeekDates() : displayDates;
                         const totalClasses = parseInt(participant.classes) || 0;
                         const remaining = calculateTotal(participant);

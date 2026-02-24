@@ -15,7 +15,17 @@ const STATIC_IMAGES = {
     'gym': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80',
     'workout': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80',
     'running': 'https://images.unsplash.com/photo-1552674605-15cff2f2be31?auto=format&fit=crop&q=80',
-    'yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80'
+    'yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80',
+    'volleyball': 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&q=80',
+    'cricket': 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&q=80',
+    'baseball': 'https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&q=80',
+    'boxing': 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&q=80',
+    'martialarts': 'https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&q=80',
+    'pilates': 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80',
+    'dance': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&q=80',
+    'cycling': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80',
+    'zumba': 'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80', // using pilates/dance vibe
+    'squash': 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80' // using badminton vibe
 };
 
 // Return a fixed, gorgeous image based on the activity name. 
