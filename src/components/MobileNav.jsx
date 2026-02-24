@@ -38,15 +38,15 @@ export const MobileNav = () => {
             border: '1px solid var(--glass-border)',
             display: 'flex',
             justifyContent: 'space-around',
-            padding: '12px 16px',
+            padding: '16px 20px',
             alignItems: 'center',
             boxShadow: 'var(--glass-shadow)',
             zIndex: 100
         }} className="mobile-nav">
-            <Home size={24} style={location.pathname === '/' ? activeStyle : navItemStyle} onClick={() => navigate('/')} />
-            <Music size={24} style={location.pathname === '/music' ? activeStyle : navItemStyle} onClick={() => navigate('/music')} />
-            <Lightbulb size={24} style={location.pathname === '/heart' ? activeStyle : navItemStyle} onClick={() => navigate('/heart')} />
-            <BookOpen size={24} style={location.pathname === '/tracker' ? activeStyle : navItemStyle} onClick={() => navigate('/tracker')} />
+            <Home size={28} style={location.pathname === '/' ? activeStyle : navItemStyle} onClick={() => navigate('/')} />
+            <Music size={28} style={location.pathname === '/music' ? activeStyle : navItemStyle} onClick={() => navigate('/music')} />
+            <Lightbulb size={28} style={location.pathname === '/heart' ? activeStyle : navItemStyle} onClick={() => navigate('/heart')} />
+            <BookOpen size={28} style={location.pathname === '/tracker' ? activeStyle : navItemStyle} onClick={() => navigate('/tracker')} />
 
             <div style={{ position: 'relative' }} ref={menuRef}>
                 {showProfileMenu && (
@@ -86,7 +86,7 @@ export const MobileNav = () => {
                     </div>
                 )}
                 <User
-                    size={24}
+                    size={28}
                     style={showProfileMenu || location.pathname === '/profile' ? activeStyle : navItemStyle}
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
                 />
