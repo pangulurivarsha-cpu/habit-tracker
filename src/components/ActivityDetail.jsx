@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Clock } from 'lucide-react';
+import { ArrowLeft, Plus, X, Clock, MoreVertical, Edit2, Trash2 } from 'lucide-react';
 import './ActivityDetail.css';
 
 export const ActivityDetail = () => {
@@ -36,6 +36,9 @@ export const ActivityDetail = () => {
 
     // Expanded row state
     const [expandedParticipantId, setExpandedParticipantId] = useState(null);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingParticipant, setEditingParticipant] = useState(null);
 
     // Month and Year state
     const currentYear = new Date().getFullYear();
@@ -73,6 +76,14 @@ export const ActivityDetail = () => {
             setTimings(savedTimings);
         }
     }, [activityName]);
+
+    useEffect(() => {
+        const handleClickOutside = () => {
+            if (activeMenu) setActiveMenu(null);
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [activeMenu]);
 
     const saveParticipantsForMonth = (monthKey, updatedParticipants) => {
         const updated = { ...participantsByMonth, [monthKey]: updatedParticipants };
@@ -253,6 +264,41 @@ export const ActivityDetail = () => {
         }
     };
 
+    const handleEditParticipant = () => {
+        if (!newName.trim() || !editingParticipant) return;
+
+        const updatedMonths = { ...participantsByMonth };
+        Object.keys(updatedMonths).forEach(monthKey => {
+            updatedMonths[monthKey] = updatedMonths[monthKey].map(p => {
+                if (p.id === editingParticipant.id) {
+                    return {
+                        ...p,
+                        name: newName.trim(),
+                        classes: newClasses,
+                        paidStatus: newPaidStatus,
+                        paymentDate: newPaymentDate
+                    };
+                }
+                return p;
+            });
+        });
+
+        setParticipantsByMonth(updatedMonths);
+        localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
+        setShowEditModal(false);
+        setEditingParticipant(null);
+    };
+
+    const openEditModal = (participant) => {
+        setEditingParticipant(participant);
+        setNewName(participant.name);
+        setNewClasses(participant.classes);
+        setNewPaidStatus(participant.paidStatus);
+        setNewPaymentDate(participant.paymentDate || '');
+        setShowEditModal(true);
+        setActiveMenu(null);
+    };
+
     const toggleAttendance = (participantId, dateStr) => {
         const updated = currentParticipants.map(p => {
             if (p.id === participantId) {
@@ -430,13 +476,25 @@ export const ActivityDetail = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleRemoveParticipant(participant.id)}
-                                        className="remove-btn-inline"
-                                        title="Remove from this month"
-                                    >
-                                        <X size={16} />
-                                    </button>
+                                    <div className="participant-actions-menu">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === participant.id ? null : participant.id); }}
+                                            className="action-menu-btn"
+                                            title="Options"
+                                        >
+                                            <MoreVertical size={16} />
+                                        </button>
+                                        {activeMenu === participant.id && (
+                                            <div className="action-dropdown" onClick={(e) => e.stopPropagation()}>
+                                                <button onClick={() => openEditModal(participant)}>
+                                                    <Edit2 size={14} /> Edit Details
+                                                </button>
+                                                <button onClick={() => { setActiveMenu(null); handleRemoveParticipant(participant.id); }} className="delete-action">
+                                                    <Trash2 size={14} /> Delete
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="calendar-scroll-wrapper" onScroll={handleScroll}>
@@ -573,6 +631,76 @@ export const ActivityDetail = () => {
                             </button>
                             <button onClick={handleAddParticipant} className="confirm-btn">
                                 Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Participant Modal */}
+            {showEditModal && (
+                <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Edit Participant</h2>
+                            <button onClick={() => setShowEditModal(false)} className="close-btn">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Name</label>
+                                <input
+                                    type="text"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                    placeholder="Enter name"
+                                    className="modal-input"
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>No. of Classes</label>
+                                    <input
+                                        type="number"
+                                        value={newClasses}
+                                        onChange={(e) => setNewClasses(e.target.value)}
+                                        placeholder="0"
+                                        className="modal-input"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Details</label>
+                                    <div className="toggle-wrapper" onClick={() => setNewPaidStatus(!newPaidStatus)}>
+                                        <div className={`status-toggle ${newPaidStatus ? 'active' : ''}`}>
+                                            {newPaidStatus ? 'Paid' : 'Unpaid'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Payment Date</label>
+                                <div className="date-input-wrapper">
+                                    <input
+                                        type="date"
+                                        value={newPaymentDate}
+                                        onChange={(e) => setNewPaymentDate(e.target.value)}
+                                        className="modal-input"
+                                    />
+                                    <span className="calendar-icon-indicator">📅</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button onClick={() => setShowEditModal(false)} className="cancel-btn">
+                                Cancel
+                            </button>
+                            <button onClick={handleEditParticipant} className="confirm-btn">
+                                Save
                             </button>
                         </div>
                     </div>

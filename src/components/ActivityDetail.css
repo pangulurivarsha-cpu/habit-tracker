@@ -228,9 +228,78 @@
     /* Disables interaction like clicking checkboxes */
 }
 
-/* Allow remove button to still be clickable even if completed */
-.participant-row.completed-participant .remove-btn-inline {
+/* Allow actions menu and checkboxes to still be clickable even if completed */
+.participant-row.completed-participant .participant-actions-menu,
+.participant-row.completed-participant .participant-calendar input {
     pointer-events: auto;
+}
+
+/* Action Dropdown Menu */
+.participant-actions-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.action-menu-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-menu-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
+
+.action-dropdown {
+    position: absolute;
+    right: 0;
+    top: 36px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    min-width: 150px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.action-dropdown button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    padding: 10px 12px;
+    color: var(--text-main);
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: left;
+    transition: background 0.2s;
+    width: 100%;
+}
+
+.action-dropdown button:hover {
+    background: var(--bg-hover);
+}
+
+.action-dropdown .delete-action {
+    color: #ef4444;
+}
+
+.action-dropdown .delete-action:hover {
+    background: rgba(239, 68, 68, 0.1);
 }
 
 .participant-name {
