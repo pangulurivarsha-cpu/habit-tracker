@@ -169,14 +169,19 @@ h6 {
 
 html {
   font-size: 16px;
-  /* Ensure base is 16px */
 }
 
-/* Mobile: Slightly larger text for readability */
+/* Mobile: Scale down slightly so all rem-based UI elements fit naturally */
 @media (max-width: 768px) {
   html {
-    font-size: 18px;
-    /* Further increased for perfect readability */
+    font-size: 14px;
+  }
+}
+
+/* Very tiny phones */
+@media (max-width: 380px) {
+  html {
+    font-size: 13px;
   }
 }
 
