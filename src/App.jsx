@@ -92,38 +92,42 @@ function App() {
 
                 console.log('🔑 User authenticated with ID:', firebaseUser.uid);
 
-                // Re-fetch full details in background with timeout
-                try {
-                    const fetchWithTimeout = Promise.race([
-                        getDoc(doc(db, 'users', firebaseUser.uid)),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Fetch Timeout')), 5000))
-                    ]);
-
-                    const userDoc = await fetchWithTimeout;
+                // Start listening to the Firestore user document
+                const userDocRef = doc(db, 'users', firebaseUser.uid);
+                const unsubscribeUser = onSnapshot(userDocRef, (userDoc) => {
                     if (userDoc.exists()) {
                         const firestoreData = userDoc.data();
                         setUser({
-                            id: firebaseUser.uid, // ✅ ALWAYS use Firebase Auth UID, not firestoreData.id
+                            id: firebaseUser.uid,
                             name: firestoreData.name || firebaseUser.displayName || 'User',
                             email: firestoreData.email || firebaseUser.email,
                             mobile: firestoreData.mobile || '',
                             hiddenSports: firestoreData.hiddenSports || []
                         });
-                        console.log('✅ User data loaded from Firestore');
+                        console.log('✅ User data synced from Firestore');
                     } else {
-                        console.warn('⚠️ User document not found in Firestore, using basic data');
+                        console.warn('⚠️ User document not found in Firestore yet, using basic data');
+                        setUser(basicUser);
                     }
-                } catch (err) {
-                    console.error("BG fetch error:", err.message);
-                    // Fallback to localStorage for mobile number
+                }, (err) => {
+                    console.error("User snapshot error:", err.message);
+                    // Fallback to basic data + local mobile
                     const localMobile = localStorage.getItem(`mobile_${firebaseUser.email}`);
-                    if (localMobile) {
-                        console.log('Using mobile from localStorage:', localMobile);
-                        setUser(prev => ({ ...prev, mobile: localMobile }));
-                    }
-                }
+                    setUser({
+                        ...basicUser,
+                        mobile: localMobile || 'Loading...'
+                    });
+                });
+
+                // Attach the unsubscribe function to the user object so it can be cleaned up
+                basicUser._unsubscribe = unsubscribeUser;
             } else {
-                setUser(null);
+                setUser(prev => {
+                    if (prev && prev._unsubscribe) {
+                        prev._unsubscribe();
+                    }
+                    return null;
+                });
                 setLoading(false);
             }
         });

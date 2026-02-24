@@ -4,21 +4,38 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, X, MoreVertical, Trash2 } from 'lucide-react';
 import './Dashboard.css';
 
-// Generate fast image URL using LoremFlickr API
+const STATIC_IMAGES = {
+    'tennis': 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&q=80',
+    'badminton': 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&q=80',
+    'pickleball': 'https://images.unsplash.com/photo-1698687777085-f55a15998a1a?auto=format&fit=crop&q=80',
+    'basketball': 'https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&q=80',
+    'soccer': 'https://images.unsplash.com/photo-1518605368461-1ee12522bdcc?auto=format&fit=crop&q=80',
+    'football': 'https://images.unsplash.com/photo-1518605368461-1ee12522bdcc?auto=format&fit=crop&q=80',
+    'swimming': 'https://images.unsplash.com/photo-1519315901367-f34f9274ceb3?auto=format&fit=crop&q=80',
+    'gym': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80',
+    'workout': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80',
+    'running': 'https://images.unsplash.com/photo-1552674605-15cff2f2be31?auto=format&fit=crop&q=80',
+    'yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80'
+};
+
+// Return a fixed, gorgeous image based on the activity name. 
 const getActivityImage = (name) => {
-    // Clean activity name for search
-    const cleanName = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
-    const searchTerm = cleanName.replace(/\s+/g, ',');
+    // If user provided a manual custom URL, we would traditionally use that, but here we enforce static matching
+    const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    // Generate a deterministic hash from the name to keep the image static
-    let hash = 0;
-    for (let i = 0; i < cleanName.length; i++) {
-        hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+    // Check if the exact cleaned name matches a known key
+    if (STATIC_IMAGES[cleanName]) {
+        return STATIC_IMAGES[cleanName];
     }
-    const lockId = Math.abs(hash % 1000) + 1; // 1 to 1000 lock ID
 
-    // LoremFlickr provides real images dynamically, ?lock keeps it consistent
-    return `https://loremflickr.com/800/600/${searchTerm},sport/all?lock=${lockId}`;
+    // Check if the cleaned name contains any of the known keys as a substring (e.g. 'morning yoga')
+    const matchedKey = Object.keys(STATIC_IMAGES).find(key => cleanName.includes(key));
+    if (matchedKey) {
+        return STATIC_IMAGES[matchedKey];
+    }
+
+    // Default beautiful abstract/generic active background if no keywords match
+    return 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80';
 };
 
 const DEFAULT_ACTIVITIES = [
