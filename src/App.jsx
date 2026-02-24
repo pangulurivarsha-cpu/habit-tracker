@@ -399,6 +399,7 @@ function AppRoutes() {
                 <Route path="/music" element={<Music />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/heart" element={<HeartAnimation />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </Layout>
     );

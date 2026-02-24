@@ -259,9 +259,40 @@ export const ActivityDetail = () => {
 
     const handleRemoveParticipant = (id) => {
         const participantName = currentParticipants.find(p => p.id === id)?.name || 'this person';
-        if (confirm(`Remove ${participantName} from ${months[selectedMonth]} ${selectedYear}?`)) {
-            saveParticipantsForMonth(currentMonthKey, currentParticipants.filter(p => p.id !== id));
+
+        // Check if participant carried forward into future months
+        const futureMonths = Object.keys(participantsByMonth).filter(key =>
+            key > currentMonthKey && participantsByMonth[key].some(p => p.id === id)
+        );
+
+        if (futureMonths.length > 0) {
+            const removeAll = window.confirm(
+                `${participantName} has carried forward to future months.\n\n` +
+                `Do you want to delete them from THIS month AND all FUTURE months?\n\n` +
+                `• Click OK to delete from everywhere forward.\n` +
+                `• Click Cancel to ONLY delete them from this specific month.`
+            );
+
+            if (removeAll) {
+                const updatedMonths = { ...participantsByMonth };
+                Object.keys(updatedMonths).forEach(monthKey => {
+                    if (monthKey >= currentMonthKey) {
+                        updatedMonths[monthKey] = updatedMonths[monthKey].filter(p => p.id !== id);
+                    }
+                });
+                setParticipantsByMonth(updatedMonths);
+                localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
+                return;
+            }
+        } else {
+            // Standard confirmation if no future carry-overs are present
+            if (!window.confirm(`Remove ${participantName} from ${months[selectedMonth]} ${selectedYear}?`)) {
+                return;
+            }
         }
+
+        // Default: Delete from this month only
+        saveParticipantsForMonth(currentMonthKey, currentParticipants.filter(p => p.id !== id));
     };
 
     const handleEditParticipant = () => {

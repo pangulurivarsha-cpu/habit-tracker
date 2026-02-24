@@ -230,6 +230,7 @@
 
 /* Allow actions menu and checkboxes to still be clickable even if completed */
 .participant-row.completed-participant .participant-actions-menu,
+.participant-row.completed-participant .participant-calendar label,
 .participant-row.completed-participant .participant-calendar input {
     pointer-events: auto;
 }
