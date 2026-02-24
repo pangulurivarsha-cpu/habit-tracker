@@ -97,10 +97,12 @@ export const ActivityDetail = () => {
         let globalAttendedCount = 0;
 
         Object.values(participantsByMonth).forEach(monthParticipants => {
-            const p = monthParticipants.find(mp =>
-                (participant.id && mp.id === participant.id) ||
-                (mp.name.toLowerCase() === participant.name.toLowerCase())
-            );
+            const p = monthParticipants.find(mp => {
+                if (participant.id && mp.id) {
+                    return participant.id === mp.id;
+                }
+                return mp.name.toLowerCase() === participant.name.toLowerCase();
+            });
 
             if (p && p.attendance) {
                 globalAttendedCount += Object.values(p.attendance).filter(Boolean).length;
@@ -199,6 +201,14 @@ export const ActivityDetail = () => {
         setShowTimingsModal(false);
     };
 
+    const openAddModal = () => {
+        setNewName('');
+        setNewClasses('');
+        setNewPaidStatus(false);
+        setNewPaymentDate('');
+        setShowAddModal(true);
+    };
+
     const handleAddParticipant = () => {
         if (!newName.trim()) return;
 
@@ -260,39 +270,16 @@ export const ActivityDetail = () => {
     const handleRemoveParticipant = (id) => {
         const participantName = currentParticipants.find(p => p.id === id)?.name || 'this person';
 
-        // Check if participant carried forward into future months
-        const futureMonths = Object.keys(participantsByMonth).filter(key =>
-            key > currentMonthKey && participantsByMonth[key].some(p => p.id === id)
-        );
-
-        if (futureMonths.length > 0) {
-            const removeAll = window.confirm(
-                `${participantName} has carried forward to future months.\n\n` +
-                `Do you want to delete them from THIS month AND all FUTURE months?\n\n` +
-                `• Click OK to delete from everywhere forward.\n` +
-                `• Click Cancel to ONLY delete them from this specific month.`
-            );
-
-            if (removeAll) {
-                const updatedMonths = { ...participantsByMonth };
-                Object.keys(updatedMonths).forEach(monthKey => {
-                    if (monthKey >= currentMonthKey) {
-                        updatedMonths[monthKey] = updatedMonths[monthKey].filter(p => p.id !== id);
-                    }
-                });
-                setParticipantsByMonth(updatedMonths);
-                localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
-                return;
-            }
-        } else {
-            // Standard confirmation if no future carry-overs are present
-            if (!window.confirm(`Remove ${participantName} from ${months[selectedMonth]} ${selectedYear}?`)) {
-                return;
-            }
+        if (window.confirm(`Are you sure you want to delete ${participantName}?`)) {
+            const updatedMonths = { ...participantsByMonth };
+            Object.keys(updatedMonths).forEach(monthKey => {
+                if (monthKey >= currentMonthKey) {
+                    updatedMonths[monthKey] = updatedMonths[monthKey].filter(p => p.id !== id);
+                }
+            });
+            setParticipantsByMonth(updatedMonths);
+            localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
         }
-
-        // Default: Delete from this month only
-        saveParticipantsForMonth(currentMonthKey, currentParticipants.filter(p => p.id !== id));
     };
 
     const handleEditParticipant = () => {
@@ -589,7 +576,7 @@ export const ActivityDetail = () => {
 
 
                     <div className="add-name-row">
-                        <button onClick={() => setShowAddModal(true)} className="add-name-btn-compact">
+                        <button onClick={openAddModal} className="add-name-btn-compact">
                             <Plus size={16} />
                             Add Names
                         </button>
