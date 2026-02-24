@@ -53,6 +53,12 @@ export const ActivityDetail = () => {
     // Filter state
     const [filterMode, setFilterMode] = useState('all'); // 'all', 'active', 'completed'
 
+    // Form Validation Error
+    const [formError, setFormError] = useState('');
+
+    // Custom Delete Modal State
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
 
 
     // Generate years (3 previous + current + 50 future = 54 years)
@@ -225,11 +231,24 @@ export const ActivityDetail = () => {
         setNewClasses('');
         setNewPaidStatus(false);
         setNewPaymentDate('');
+        setFormError('');
         setShowAddModal(true);
     };
 
     const handleAddParticipant = () => {
-        if (!newName.trim()) return;
+        setFormError('');
+        if (!newName.trim()) {
+            setFormError('Name is required.');
+            return;
+        }
+        if (!newClasses || parseInt(newClasses) < 0) {
+            setFormError('No. of Classes must be 0 or greater.');
+            return;
+        }
+        if (newPaidStatus && !newPaymentDate) {
+            setFormError('Payment Date is required when status is Paid.');
+            return;
+        }
 
         // Build all updates at once to avoid state batching issues
         const updatedMonths = { ...participantsByMonth };
@@ -259,22 +278,38 @@ export const ActivityDetail = () => {
     };
 
     const handleRemoveParticipant = (id) => {
-        const participantName = currentParticipants.find(p => p.id === id)?.name || 'this person';
+        setDeleteConfirmId(id);
+    };
 
-        if (window.confirm(`Are you sure you want to delete ${participantName}?`)) {
-            const updatedMonths = { ...participantsByMonth };
-            Object.keys(updatedMonths).forEach(monthKey => {
-                if (monthKey >= currentMonthKey) {
-                    updatedMonths[monthKey] = updatedMonths[monthKey].filter(p => p.id !== id);
-                }
-            });
-            setParticipantsByMonth(updatedMonths);
-            localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
-        }
+    const confirmDelete = () => {
+        if (!deleteConfirmId) return;
+        const id = deleteConfirmId;
+        const updatedMonths = { ...participantsByMonth };
+        Object.keys(updatedMonths).forEach(monthKey => {
+            if (monthKey >= currentMonthKey) {
+                updatedMonths[monthKey] = updatedMonths[monthKey].filter(p => p.id !== id);
+            }
+        });
+        setParticipantsByMonth(updatedMonths);
+        localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updatedMonths));
+        setDeleteConfirmId(null);
     };
 
     const handleEditParticipant = () => {
-        if (!newName.trim() || !editingParticipant) return;
+        setFormError('');
+        if (!editingParticipant) return;
+        if (!newName.trim()) {
+            setFormError('Name is required.');
+            return;
+        }
+        if (!newClasses || parseInt(newClasses) < 0) {
+            setFormError('No. of Classes must be 0 or greater.');
+            return;
+        }
+        if (newPaidStatus && !newPaymentDate) {
+            setFormError('Payment Date is required when status is Paid.');
+            return;
+        }
 
         const updatedMonths = { ...participantsByMonth };
         Object.keys(updatedMonths).forEach(monthKey => {
@@ -304,6 +339,7 @@ export const ActivityDetail = () => {
         setNewClasses(participant.classes);
         setNewPaidStatus(participant.paidStatus);
         setNewPaymentDate(participant.paymentDate || '');
+        setFormError('');
         setShowEditModal(true);
         setActiveMenu(null);
     };
@@ -582,12 +618,14 @@ export const ActivityDetail = () => {
                                                 const isChecked = participant.attendance[localDateStr] || false;
 
                                                 const isPaymentDate = participant.paymentDate === localDateStr;
+                                                const noClassesLeft = !participant.classes || parseInt(participant.classes) <= 0;
 
                                                 return (
-                                                    <label key={localDateStr} className={`checkbox-cell ${isPaymentDate ? 'payment-date-highlight' : ''}`} title={isPaymentDate ? "Payment Date" : ""}>
+                                                    <label key={localDateStr} className={`checkbox-cell ${isPaymentDate ? 'payment-date-highlight' : ''} ${noClassesLeft ? 'disabled-cell' : ''}`} title={isPaymentDate ? "Payment Date" : ""}>
                                                         <span className="date-num">{date.getDate()}</span>
                                                         <input
                                                             type="checkbox"
+                                                            disabled={noClassesLeft}
                                                             checked={isChecked}
                                                             onChange={() => toggleAttendance(participant.id, localDateStr)}
                                                         />
@@ -641,6 +679,7 @@ export const ActivityDetail = () => {
                         </div>
 
                         <div className="modal-body">
+                            {formError && <div className="modal-error-text" style={{ color: 'var(--red-400)', marginBottom: '16px', fontSize: '0.9rem', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{formError}</div>}
                             <div className="form-group">
                                 <label>Name</label>
                                 <input
@@ -712,6 +751,7 @@ export const ActivityDetail = () => {
                         </div>
 
                         <div className="modal-body">
+                            {formError && <div className="modal-error-text" style={{ color: 'var(--red-400)', marginBottom: '16px', fontSize: '0.9rem', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>{formError}</div>}
                             <div className="form-group">
                                 <label>Name</label>
                                 <input
@@ -857,8 +897,33 @@ export const ActivityDetail = () => {
                         </div>
                     </div>
                 </div>
-            )
-            }
+            )}
+
+            {/* Custom Delete Confirmation Modal */}
+            {deleteConfirmId && (
+                <div className="modal-overlay" onClick={() => setDeleteConfirmId(null)}>
+                    <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '350px' }}>
+                        <div className="modal-header" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+                            <h2 style={{ color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Trash2 size={20} color="var(--red-400)" /> Delete User?
+                            </h2>
+                        </div>
+                        <div className="modal-body" style={{ paddingTop: '16px' }}>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                                Are you sure you want to permanently delete <strong>{capitalizeName(currentParticipants.find(p => p.id === deleteConfirmId)?.name || 'this person')}</strong> from your tracking? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="modal-footer" style={{ borderTop: 'none', paddingTop: '8px', gap: '12px' }}>
+                            <button onClick={() => setDeleteConfirmId(null)} className="cancel-btn">
+                                Cancel
+                            </button>
+                            <button onClick={confirmDelete} className="confirm-btn" style={{ background: 'var(--red-500)' }}>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
