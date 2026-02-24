@@ -60,7 +60,6 @@ export const ActivityDetail = () => {
 
     // Current month key for getting participants
     const currentMonthKey = getMonthKey(selectedYear, selectedMonth);
-    const currentParticipants = participantsByMonth[currentMonthKey] || [];
 
     useEffect(() => {
         // Load all participants by month
@@ -80,6 +79,66 @@ export const ActivityDetail = () => {
         setParticipantsByMonth(updated);
         localStorage.setItem(`activity_${activityName}_participantsByMonth`, JSON.stringify(updated));
     };
+
+    // Calculate total attendance ACROSS ALL MONTHS for this participant
+    // Uses ID if available, falls back to Name for older legacy data
+    const calculateGlobalAttendance = (participant) => {
+        let globalAttendedCount = 0;
+
+        Object.values(participantsByMonth).forEach(monthParticipants => {
+            const p = monthParticipants.find(mp =>
+                (participant.id && mp.id === participant.id) ||
+                (mp.name.toLowerCase() === participant.name.toLowerCase())
+            );
+
+            if (p && p.attendance) {
+                globalAttendedCount += Object.values(p.attendance).filter(Boolean).length;
+            }
+        });
+
+        return globalAttendedCount;
+    };
+
+    const calculateTotal = (participant) => {
+        // We now want a global remaining count regardless of view mode.
+        const globalAttendedCount = calculateGlobalAttendance(participant);
+        const totalClasses = parseInt(participant.classes) || 0;
+
+        if (totalClasses > 0) {
+            return totalClasses - globalAttendedCount;
+        }
+
+        // If they don't have a set number of classes, just show how many they've attended total
+        return globalAttendedCount;
+    };
+
+    // Dynamically carry forward participants from previous months
+    const savedCurrentParticipants = participantsByMonth[currentMonthKey] || [];
+    const carriedForwardParticipants = [];
+
+    Object.keys(participantsByMonth).forEach(monthKey => {
+        if (monthKey < currentMonthKey) {
+            participantsByMonth[monthKey].forEach(pastParticipant => {
+                const totalClasses = parseInt(pastParticipant.classes) || 0;
+                if (totalClasses > 0) {
+                    const alreadyInCurrent = savedCurrentParticipants.some(p => p.id === pastParticipant.id || p.name.toLowerCase() === pastParticipant.name.toLowerCase());
+                    const alreadyCarried = carriedForwardParticipants.some(p => p.id === pastParticipant.id || p.name.toLowerCase() === pastParticipant.name.toLowerCase());
+
+                    if (!alreadyInCurrent && !alreadyCarried) {
+                        const remaining = calculateTotal(pastParticipant);
+                        if (remaining > 0) {
+                            carriedForwardParticipants.push({
+                                ...pastParticipant,
+                                attendance: {}
+                            });
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    const currentParticipants = [...savedCurrentParticipants, ...carriedForwardParticipants];
 
     // Cleanup legacy data effect
     useEffect(() => {
@@ -256,38 +315,6 @@ export const ActivityDetail = () => {
             dates.push(date);
         }
         return dates;
-    };
-
-    // Calculate total attendance ACROSS ALL MONTHS for this participant
-    // Uses ID if available, falls back to Name for older legacy data
-    const calculateGlobalAttendance = (participant) => {
-        let globalAttendedCount = 0;
-
-        Object.values(participantsByMonth).forEach(monthParticipants => {
-            const p = monthParticipants.find(mp =>
-                (participant.id && mp.id === participant.id) ||
-                (mp.name.toLowerCase() === participant.name.toLowerCase())
-            );
-
-            if (p && p.attendance) {
-                globalAttendedCount += Object.values(p.attendance).filter(Boolean).length;
-            }
-        });
-
-        return globalAttendedCount;
-    };
-
-    const calculateTotal = (participant) => {
-        // We now want a global remaining count regardless of view mode.
-        const globalAttendedCount = calculateGlobalAttendance(participant);
-        const totalClasses = parseInt(participant.classes) || 0;
-
-        if (totalClasses > 0) {
-            return totalClasses - globalAttendedCount;
-        }
-
-        // If they don't have a set number of classes, just show how many they've attended total
-        return globalAttendedCount;
     };
 
     const displayDates = viewMode === 'week' ? getWeekDates() : getCalendarDates();

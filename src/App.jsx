@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useState, createContext, useContext, useEffect, useRef } from 'react';
 import { Home, Music as MusicIcon, Lightbulb, BookOpen, User } from 'lucide-react';
 
@@ -392,6 +392,7 @@ function AppRoutes() {
             <UserDataMigration />
 
             <Routes>
+                <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/activity/:activityName" element={<ActivityDetail />} />
                 <Route path="/tracker" element={<TrackerView />} />
