@@ -6,7 +6,8 @@ import { auth, db } from '../firebase';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    updateProfile
+    updateProfile,
+    sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
@@ -144,11 +145,25 @@ export const Login = () => {
         }
     };
 
-    const handleForgotPasswordSubmit = (e) => {
+    const handleForgotPasswordSubmit = async (e) => {
         e.preventDefault();
-        if (forgotEmail.trim()) {
-            alert(`Password reset link sent to ${forgotEmail}`);
+        const emailToReset = forgotEmail.trim();
+        if (!emailToReset) {
+            alert("Please enter your email address.");
+            return;
+        }
+
+        try {
+            await sendPasswordResetEmail(auth, emailToReset);
+            alert(`Password reset link sent to ${emailToReset}. Please check your inbox (and spam folder).`);
             setView('login');
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            if (error.code === 'auth/user-not-found') {
+                alert("No account found with this email address.");
+            } else {
+                alert("Failed to send reset email: " + error.message);
+            }
         }
     };
 
