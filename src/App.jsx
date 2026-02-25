@@ -398,6 +398,9 @@ function AppRoutes() {
     const location = useLocation();
 
     if (!user) {
+        if (location.pathname === '/reset-password') {
+            return <ResetPassword />;
+        }
         if (location.pathname !== '/' && location.pathname !== '/login') {
             return <Navigate to="/" replace />;
         }
@@ -410,7 +413,6 @@ function AppRoutes() {
             <Routes>
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/activity/:activityName" element={<ActivityDetail />} />
                 <Route path="/tracker" element={<TrackerView />} />
                 <Route path="/music" element={<Music />} />
