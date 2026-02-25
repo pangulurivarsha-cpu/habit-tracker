@@ -185,14 +185,23 @@
 }
 
 .header-names,
-.header-calendar,
-.header-total {
+.header-calendar {
     font-size: 14px;
-    /* Increased from 0.8rem */
     text-transform: uppercase;
     color: var(--text-muted);
     font-weight: 600;
     letter-spacing: 0.05em;
+}
+
+.header-total {
+    font-size: 14px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: center;
+    width: 100%;
 }
 
 .calendar-title {
@@ -1283,5 +1292,9 @@ input[type="date"] {
 
     .total-cell {
         padding: 0 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
     }
 }

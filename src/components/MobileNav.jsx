@@ -43,10 +43,10 @@ export const MobileNav = () => {
             boxShadow: 'var(--glass-shadow)',
             zIndex: 100
         }} className="mobile-nav">
-            <Home size={28} style={location.pathname === '/' ? activeStyle : navItemStyle} onClick={() => navigate('/')} />
-            <Music size={28} style={location.pathname === '/music' ? activeStyle : navItemStyle} onClick={() => navigate('/music')} />
-            <Lightbulb size={28} style={location.pathname === '/heart' ? activeStyle : navItemStyle} onClick={() => navigate('/heart')} />
-            <BookOpen size={28} style={location.pathname === '/tracker' ? activeStyle : navItemStyle} onClick={() => navigate('/tracker')} />
+            <Home size={32} style={location.pathname === '/' ? activeStyle : navItemStyle} onClick={() => navigate('/')} />
+            <Music size={32} style={location.pathname === '/music' ? activeStyle : navItemStyle} onClick={() => navigate('/music')} />
+            <Lightbulb size={32} style={location.pathname === '/heart' ? activeStyle : navItemStyle} onClick={() => navigate('/heart')} />
+            <BookOpen size={32} style={location.pathname === '/tracker' ? activeStyle : navItemStyle} onClick={() => navigate('/tracker')} />
 
             <div style={{ position: 'relative' }} ref={menuRef}>
                 {showProfileMenu && (
@@ -86,7 +86,7 @@ export const MobileNav = () => {
                     </div>
                 )}
                 <User
-                    size={28}
+                    size={32}
                     style={showProfileMenu || location.pathname === '/profile' ? activeStyle : navItemStyle}
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
                 />
