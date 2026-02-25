@@ -1250,13 +1250,13 @@ input[type="date"] {
     }
 
     .compact-grid-header {
-        grid-template-columns: 120px 1fr 60px;
+        grid-template-columns: 120px 1fr 80px;
         /* Compress Name Column */
         gap: 8px;
     }
 
     .participant-row {
-        grid-template-columns: 120px 1fr 60px;
+        grid-template-columns: 120px 1fr 80px;
         /* Compress Name Column, keep matching 3 columns */
         gap: 8px;
     }
