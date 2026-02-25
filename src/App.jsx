@@ -394,7 +394,14 @@ function App() {
 
 function AppRoutes() {
     const { user } = useUser();
-    if (!user) return <Login />;
+    const location = useLocation();
+
+    if (!user) {
+        if (location.pathname !== '/' && location.pathname !== '/login') {
+            return <Navigate to="/" replace />;
+        }
+        return <Login />;
+    }
     return (
         <Layout>
             <UserDataMigration />
