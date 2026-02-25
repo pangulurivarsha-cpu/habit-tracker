@@ -1245,8 +1245,8 @@ input[type="date"] {
     }
 
     .participant-row {
-        grid-template-columns: 120px 1fr;
-        /* Compress Name Column */
+        grid-template-columns: 120px 1fr 60px;
+        /* Compress Name Column, keep matching 3 columns */
         gap: 8px;
     }
 
