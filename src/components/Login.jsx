@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUser } from '../App';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 import './Login.css';
 import { auth, db } from '../firebase';
 import {
@@ -31,6 +31,7 @@ export const Login = () => {
 
     // Forgot Password Form State
     const [forgotEmail, setForgotEmail] = useState('');
+    const [resetSent, setResetSent] = useState(false);
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -153,13 +154,16 @@ export const Login = () => {
             return;
         }
 
+        console.log(`Attempting to send password reset email to: '${emailToReset}'`);
+
         try {
             await sendPasswordResetEmail(auth, emailToReset);
-            alert(`Password reset link sent to ${emailToReset}. Please check your inbox (and spam folder).`);
-            setView('login');
+            console.log("Firebase reported success (email sent or queued).");
+            setResetSent(true);
         } catch (error) {
             console.error("Error sending password reset email:", error);
             if (error.code === 'auth/user-not-found') {
+                // This block might NOT run if Email Enumeration Protection is enabled in Firebase Console.
                 alert("No account found with this email address.");
             } else {
                 alert("Failed to send reset email: " + error.message);
@@ -171,27 +175,64 @@ export const Login = () => {
         return (
             <div className="login-container">
                 <div className="login-card">
-                    <h2 className="login-title">Reset Password</h2>
-                    <form className="form-group" onSubmit={handleForgotPasswordSubmit}>
-                        <div className="login-subtitle">
-                            Enter your email address to receive a password reset link.
+                    {resetSent ? (
+                        <div className="animate-scale-in" style={{ textAlign: 'center', width: '100%' }}>
+                            <div style={{
+                                width: '80px', height: '80px', background: 'rgba(6, 182, 212, 0.15)',
+                                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                margin: '0 auto 24px auto', color: 'var(--primary-400)'
+                            }}>
+                                <Mail size={40} />
+                            </div>
+                            <h2 className="login-title" style={{ fontSize: '2rem' }}>Check your mail</h2>
+                            <p className="login-subtitle" style={{ marginBottom: '24px' }}>
+                                We have sent a password recover instruction to your email.
+                            </p>
+
+                            <div style={{
+                                background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.2)',
+                                borderRadius: '12px', padding: '16px', marginBottom: '32px', textAlign: 'left',
+                                display: 'flex', gap: '12px', alignItems: 'start'
+                            }}>
+                                <AlertTriangle size={20} color="#fbbf24" style={{ flexShrink: 0, marginTop: '2px' }} />
+                                <span style={{ fontSize: '0.9rem', color: '#fbbf24' }}>
+                                    Did not receive the email? Check your <strong>Spam filter</strong>, or try another email address.
+                                </span>
+                            </div>
+
+                            <button onClick={() => { setView('login'); setResetSent(false); }} className="login-btn">
+                                Back into Login
+                            </button>
+
+                            <div className="switch-text" onClick={() => setResetSent(false)}>
+                                Try another email
+                            </div>
                         </div>
-                        <input
-                            type="email"
-                            className="styled-input"
-                            placeholder="Email ID"
-                            value={forgotEmail}
-                            onChange={(e) => setForgotEmail(e.target.value)}
-                        />
+                    ) : (
+                        <>
+                            <h2 className="login-title">Reset Password</h2>
+                            <form className="form-group" onSubmit={handleForgotPasswordSubmit}>
+                                <div className="login-subtitle">
+                                    Enter your email address to receive a password reset link.
+                                </div>
+                                <input
+                                    type="email"
+                                    className="styled-input"
+                                    placeholder="Email ID"
+                                    value={forgotEmail}
+                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                />
 
-                        <button type="submit" className="login-btn" style={{ width: '100%', justifyContent: 'center' }}>
-                            Send Link <ArrowRight size={16} />
-                        </button>
-                    </form>
+                                <button type="submit" className="login-btn" style={{ width: '100%', justifyContent: 'center' }}>
+                                    Send Link <ArrowRight size={16} />
+                                </button>
+                            </form>
 
-                    <div className="switch-text" onClick={() => setView('login')}>
-                        Back to Login
-                    </div>
+                            <div className="switch-text" onClick={() => setView('login')}>
+                                Back to Login
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );

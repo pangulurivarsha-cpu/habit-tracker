@@ -4,6 +4,7 @@ import { Home, Music as MusicIcon, Lightbulb, BookOpen, User } from 'lucide-reac
 
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
+import { ResetPassword } from './components/ResetPassword';
 import { TrackerView } from './components/TrackerView';
 import { Profile } from './components/Profile';
 import HeartAnimation from './components/HeartAnimation';
@@ -409,6 +410,7 @@ function AppRoutes() {
             <Routes>
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/activity/:activityName" element={<ActivityDetail />} />
                 <Route path="/tracker" element={<TrackerView />} />
                 <Route path="/music" element={<Music />} />
