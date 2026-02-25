@@ -12,7 +12,7 @@ export const ActivityDetail = () => {
     const navigate = useNavigate();
 
     const { user } = useUser(); // Get authenticated user
-    const { activities } = useHabits(); // Get activities to find current activity ID
+    const { activities, addActivity } = useHabits(); // Get activities to find current activity ID
 
     // Store participants per month-year combination
     const [participantsByMonth, setParticipantsByMonth] = useState({});
@@ -87,7 +87,36 @@ export const ActivityDetail = () => {
         a.id.toLowerCase() === activityName.toLowerCase()
     );
 
-    // --- FIRESTORE SYNC LOGIC ---
+    // --- AUTO-CREATE DEFAULT ACTIVITIES ---
+    // If the user navigates to "Badminton" but hasn't "added" it yet, we create it on the fly.
+    const [isCreatingDefault, setIsCreatingDefault] = useState(false);
+    useEffect(() => {
+        if (!user || !activities || isCreatingDefault) return;
+        
+        // If we found it, great.
+        if (currentActivity) return;
+
+        // If not found, check if it's a known default sport
+        const DEFAULT_SPORTS = ['tennis', 'badminton', 'pickleball', 'basketball'];
+        const normalizedName = activityName.toLowerCase();
+        
+        if (DEFAULT_SPORTS.includes(normalizedName)) {
+            setIsCreatingDefault(true);
+            const createDefault = async () => {
+                try {
+                    console.log(`Creating default activity document for ${activityName}...`);
+                    await addActivity(capitalizeName(activityName));
+                    // The listener will pick it up and re-render
+                } catch (err) {
+                    console.error("Error creating default activity:", err);
+                } finally {
+                    setIsCreatingDefault(false);
+                }
+            };
+            createDefault();
+        }
+    }, [user, activities, activityName, currentActivity, addActivity, isCreatingDefault]);
+
 
     // 1. Sync Timings from the Activity Document
     useEffect(() => {
