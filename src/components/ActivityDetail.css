@@ -73,8 +73,9 @@
     gap: var(--space-sm);
     color: var(--text-muted);
     font-size: 18px;
-    /* Increased from 0.95rem */
     margin-top: var(--space-sm);
+    flex-wrap: wrap;
+    /* Fix: Allow long timings text to smoothly wrap on small screens */
 }
 
 .edit-timings-btn {
@@ -1181,8 +1182,7 @@ input[type="date"] {
     .activity-detail {
         padding: 10px 0;
         /* Remove horizontal padding entirely to maximize screen */
-        width: 100vw;
-        max-width: 100vw;
+        width: 100%;
         overflow-x: hidden;
     }
 
@@ -1220,9 +1220,8 @@ input[type="date"] {
         padding: 15px 10px;
         margin: 0 -10px;
         /* Pull table out to edge of screen */
-        width: 100vw;
-        /* Exact screen width */
-        max-width: 100vw;
+        width: calc(100% + 20px);
+        /* Fill screen accurately based on relative parent padding */
         border-radius: 0;
         /* Remove rounding on edges for flush fit */
         border-left: none;
