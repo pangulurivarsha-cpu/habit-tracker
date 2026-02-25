@@ -71,6 +71,7 @@ function App() {
     const [habits, setHabits] = useState([]);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activitiesLoaded, setActivitiesLoaded] = useState(false);
 
 
 
@@ -139,6 +140,7 @@ function App() {
         if (!user?.id) {
             setHabits([]);
             setActivities([]);
+            setActivitiesLoaded(false);
             return;
         }
 
@@ -171,8 +173,10 @@ function App() {
                 // Save to localStorage as backup
                 localStorage.setItem(localStorageKey, JSON.stringify(loadedActivities));
             }
+            setActivitiesLoaded(true);
         }, (error) => {
             console.warn('⚠️ Firestore sync failed, using localStorage:', error.message);
+            setActivitiesLoaded(true);
         });
 
         return () => {
@@ -379,7 +383,7 @@ function App() {
 
     return (
         <UserContext.Provider value={{ user, setUser, login, logout }}>
-            <HabitContext.Provider value={{ habits, addHabit, toggleCheck, activities, addActivity, deleteActivity, updateActivityImage }}>
+            <HabitContext.Provider value={{ habits, addHabit, toggleCheck, activities, activitiesLoaded, addActivity, deleteActivity, updateActivityImage }}>
                 <Router>
                     <AppRoutes />
                 </Router>

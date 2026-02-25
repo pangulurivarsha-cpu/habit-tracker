@@ -12,7 +12,7 @@ export const ActivityDetail = () => {
     const navigate = useNavigate();
 
     const { user } = useUser(); // Get authenticated user
-    const { activities, addActivity } = useHabits(); // Get activities to find current activity ID
+    const { activities, addActivity, activitiesLoaded } = useHabits(); // Get activities and loading state
 
     // Store participants per month-year combination
     const [participantsByMonth, setParticipantsByMonth] = useState({});
@@ -81,25 +81,33 @@ export const ActivityDetail = () => {
     const currentMonthKey = getMonthKey(selectedYear, selectedMonth);
 
     // Find the current activity ID from context based on the URL name parameter
-    // This is crucial because Firestore needs the ID, not just the name
-    const currentActivity = activities.find(a =>
+    // If the race condition created duplicates, we MUST pick the OLDEST one (which has the migrated data)
+    const matchingActivities = activities.filter(a =>
         a.name.toLowerCase() === activityName.toLowerCase() ||
         a.id.toLowerCase() === activityName.toLowerCase()
     );
+
+    const sortedActivities = [...matchingActivities].sort((a, b) => {
+        const timeA = a.created_at?.seconds || (typeof a.created_at === 'string' ? new Date(a.created_at).getTime() / 1000 : 0);
+        const timeB = b.created_at?.seconds || (typeof b.created_at === 'string' ? new Date(b.created_at).getTime() / 1000 : 0);
+        return timeA - timeB; // Ascending: oldest first
+    });
+
+    const currentActivity = sortedActivities.length > 0 ? sortedActivities[0] : undefined;
 
     // --- AUTO-CREATE DEFAULT ACTIVITIES ---
     // If the user navigates to "Badminton" but hasn't "added" it yet, we create it on the fly.
     const [isCreatingDefault, setIsCreatingDefault] = useState(false);
     useEffect(() => {
-        if (!user || !activities || isCreatingDefault) return;
-        
+        if (!user || !activitiesLoaded || isCreatingDefault) return;
+
         // If we found it, great.
         if (currentActivity) return;
 
         // If not found, check if it's a known default sport
         const DEFAULT_SPORTS = ['tennis', 'badminton', 'pickleball', 'basketball'];
         const normalizedName = activityName.toLowerCase();
-        
+
         if (DEFAULT_SPORTS.includes(normalizedName)) {
             setIsCreatingDefault(true);
             const createDefault = async () => {
