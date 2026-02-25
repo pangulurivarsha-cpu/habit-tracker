@@ -62,6 +62,7 @@ export const Dashboard = () => {
 
     const [isAdding, setIsAdding] = useState(false);
     const [newActivityName, setNewActivityName] = useState('');
+    const [addError, setAddError] = useState('');
     // const [newActivityImage, setNewActivityImage] = useState(''); // Removed as per request
     const [activeMenu, setActiveMenu] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -93,10 +94,19 @@ export const Dashboard = () => {
 
     const handleAddActivity = async (e) => {
         e.preventDefault();
-        if (!newActivityName.trim()) return;
-        await addActivity(newActivityName.trim()); // Auto-image only
+        const trimmedName = newActivityName.trim();
+        if (!trimmedName) return;
+
+        // --- Duplicate Check ---
+        const isDuplicate = allActivities.some(a => a.name.toLowerCase() === trimmedName.toLowerCase());
+        if (isDuplicate) {
+            setAddError('Activity already exists on your dashboard.');
+            return;
+        }
+
+        await addActivity(trimmedName); // Auto-image only
         setNewActivityName('');
-        // setNewActivityImage(''); // Removed
+        setAddError('');
 
         // Show success message
         setShowSuccess(true);
@@ -190,7 +200,18 @@ export const Dashboard = () => {
                             overflow: 'hidden',
                             cursor: 'pointer',
                             height: '200px',
-                            border: '1px solid var(--border-subtle)'
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '16px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                            transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                            e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
                         }}
                         onClick={() => handleSelectActivity(activity)}
                     >
@@ -213,14 +234,16 @@ export const Dashboard = () => {
                             left: 0,
                             width: '100%',
                             height: '100%',
-                            background: 'linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.2))',
+                            background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0) 60%)',
                             zIndex: 1
                         }}></div>
 
                         {/* Content */}
                         <div style={{ position: 'relative', zIndex: 2, padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white' }}>{capitalizeName(activity.name)}</span>
+                                <div>
+                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 500, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>{capitalizeName(activity.name)}</h3>
+                                </div>
                                 <div
                                     className="icon-btn"
                                     onClick={(e) => {
@@ -276,10 +299,22 @@ export const Dashboard = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         border: '2px dashed var(--border-subtle)',
-                        background: 'transparent',
+                        borderRadius: '16px',
+                        background: 'rgba(255,255,255,0.02)',
                         cursor: 'pointer',
                         color: 'var(--text-muted)',
-                        gap: '12px'
+                        gap: '12px',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.borderColor = 'var(--primary-400)';
+                        e.currentTarget.style.color = 'var(--primary-400)';
+                    }}
+                    onMouseLeave={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                        e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                        e.currentTarget.style.color = 'var(--text-muted)';
                     }}
                 >
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -293,24 +328,69 @@ export const Dashboard = () => {
             {isAdding && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1000,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-                }} onClick={() => setIsAdding(false)}>
-                    <div className="card animate-scale-in" style={{ width: '100%', maxWidth: '400px', background: 'var(--slate-900)' }} onClick={e => e.stopPropagation()}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                            <h3>New Activity</h3>
-                            <X size={20} onClick={() => setIsAdding(false)} style={{ cursor: 'pointer', color: 'white' }} />
+                    background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(16px)', zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
+                    animation: 'fadeIn 0.2s ease-out'
+                }} onClick={() => { setIsAdding(false); setAddError(''); }}>
+                    <div className="animate-scale-in" style={{
+                        width: '100%',
+                        maxWidth: '400px',
+                        background: 'rgba(30, 41, 59, 0.8)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '24px',
+                        padding: '32px',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }} onClick={e => e.stopPropagation()}>
+
+                        {/* Decorative glow */}
+                        <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '100px', height: '100px', background: 'var(--primary-500)', filter: 'blur(50px)', opacity: 0.3, borderRadius: '50%' }}></div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'white', margin: 0 }}>New Activity</h3>
+                            <button onClick={() => { setIsAdding(false); setAddError(''); }} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: 'var(--slate-400)' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                                <X size={18} />
+                            </button>
                         </div>
-                        <form onSubmit={handleAddActivity}>
+                        <form onSubmit={handleAddActivity} style={{ position: 'relative', zIndex: 1 }}>
                             <input
                                 autoFocus
                                 className="input"
-                                placeholder="Activity Name (e.g., Yoga)"
+                                placeholder="e.g., Yoga, Swimming, Reading..."
                                 value={newActivityName}
-                                onChange={(e) => setNewActivityName(e.target.value)}
-                                style={{ marginBottom: '20px' }}
+                                onChange={(e) => { setNewActivityName(e.target.value); setAddError(''); }}
+                                style={{
+                                    marginBottom: addError ? '16px' : '24px',
+                                    background: 'rgba(15, 23, 42, 0.5)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '12px',
+                                    padding: '16px',
+                                    fontSize: '1.05rem',
+                                    color: 'white',
+                                    width: '100%'
+                                }}
                             />
-                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Create Activity</button>
+                            {addError && (
+                                <div style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '24px', background: 'rgba(239, 68, 68, 0.1)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }}></div>
+                                    {addError}
+                                </div>
+                            )}
+                            <button type="submit" className="btn btn-primary" style={{
+                                width: '100%',
+                                padding: '16px',
+                                borderRadius: '100px',
+                                fontSize: '1.05rem',
+                                fontWeight: 500,
+                                boxShadow: '0 10px 20px -10px var(--primary-500)',
+                                background: 'linear-gradient(135deg, var(--primary-500), var(--primary-600))',
+                                border: 'none',
+                                color: 'white',
+                                cursor: 'pointer'
+                            }}>
+                                Create Activity
+                            </button>
                         </form>
                     </div>
                 </div>
