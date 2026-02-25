@@ -190,6 +190,9 @@ html {
   #root {
     flex-direction: row;
     /* Sidebar on left, Content on right */
+    height: 100vh;
+    overflow: hidden;
+    /* Lock the window scroll */
   }
 
   /* Main Content Area adjustments for desktop */
@@ -200,7 +203,10 @@ html {
     /* Max width for really wide screens */
     margin: 0 auto;
     width: 100%;
+    height: 100vh;
+    /* Full height of container */
     overflow-y: auto;
+    /* Scroll INSIDE this container */
   }
 }
 

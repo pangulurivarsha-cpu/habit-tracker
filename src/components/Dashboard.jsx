@@ -143,7 +143,17 @@ export const Dashboard = () => {
 
     const hiddenDefaults = user?.hiddenSports || [];
     const visibleDefaults = DEFAULT_ACTIVITIES.filter(s => !hiddenDefaults.includes(s.id));
-    const allActivities = [...visibleDefaults, ...activities];
+
+    // Deduplicate activities (prefer defaults/first occurrence)
+    const combinedActivities = [...visibleDefaults, ...activities];
+    const uniqueActivitiesMap = new Map();
+    combinedActivities.forEach(activity => {
+        const key = activity.name.toLowerCase().trim();
+        if (!uniqueActivitiesMap.has(key)) {
+            uniqueActivitiesMap.set(key, activity);
+        }
+    });
+    const allActivities = Array.from(uniqueActivitiesMap.values());
 
     // Greeting logic
     const today = new Date();
