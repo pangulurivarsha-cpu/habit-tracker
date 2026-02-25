@@ -214,7 +214,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
+    width: 100%;
 }
 
 /* Participant Row */
@@ -1285,16 +1287,14 @@ input[type="date"] {
         font-size: 9px;
     }
 
-    .checkbox-cell input[type="checkbox"] {
-        width: 14px;
-        height: 14px;
-    }
-
+    .header-total,
     .total-cell {
-        padding: 0 4px;
+        padding: 0;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         width: 100%;
+        text-align: center;
     }
 }
